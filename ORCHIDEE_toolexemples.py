@@ -7,7 +7,7 @@ Created on Wed Mar 21 07:10:37 2018
 @institution: CIMA, Universidad de Buenos Aires (Argentina)
 """
 import sys
-sys.path.append("/home/anthony/TotiTools")
+sys.path.append("/home/anthony/TotiTools/ORCH-Project/")
 import ORCHIDEE_tools as OR
 
 ### ORCHIDEE Valid Stations - La Plata Basin 0.5° ###
