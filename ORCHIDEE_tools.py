@@ -814,7 +814,7 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, chem_grid="", chem_grdc
     
     return 
 ### Plot the time series graph for a list of stations
-def plotallstn(Lst, L, chem_GRDC, y1, y2, style, dgraphs, chem_grid="", chem_grdc_rd=""):
+def plotallstn(Lst, L, chem_GRDC, y1, y2, dgraphs, chem_grid="", chem_grdc_rd=""):
     i=0
     while i<len(Lst):
         print "####"
