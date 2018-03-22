@@ -59,7 +59,8 @@ L=[La, Lb, Lc]
 # chem_GRDC: direction of GRDC original file
 # y1, y2: first and last year (last year included)
 # dgraphs: direction where the graph will be saved
-TT =OR.plot_annualcyclestn(stname, L, chem_GRDC, y1, y2, dgraphs)
+# basin: name of the basin, must be in the graph
+TT =OR.plot_annualcyclestn(stname, L, chem_GRDC, y1, y2, dgraphs, basin)
 
 ### TIME SERIE  ###
 # Parameters
@@ -93,11 +94,12 @@ L1=[La, Lb, Lc, Lf]
 # chem_GRDC: direction of GRDC original file
 # y1, y2: first and last year (last year included)
 # dgraphs: direction where the graph will be saved
+# basin: name of the basin (must be in the list)
 # chem_grid: direction of the cell area grid file corresponding to output
 # chem_grdc_rd: direction of grdc_river_desc.nc file corresponding
-OR.plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, chem_grid, chem_grdc_rd)
+OR.plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd, basin)
 
 # Plot all station from list Lst
 Lst=[stname1, stname2,...]
-OR.plotallstn(Lst, L, chem_GRDC, y1, y2, dgraphs, chem_grid, chem_grdc_rd)
+OR.plotallstn(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd)
 

@@ -60,11 +60,15 @@ LatMod=[-21.25,-25.75,-23.25,-24.25,-22.75,-24.25,-21.25,-20.25,-26.75,-21.25,-2
         -23.25,-17.75,-25.25,-28.25,-27.25,-26.25,-22.25,-23.75,-19.75,-26.25,-23.25,
         -16.25,-32.25]
 
+# Style to plot
 style=[["-","","k",0.6],
        ["-","x","r",0.6],
        ["--","o","#dc6900",0.6],
        ["-.","","b",0.4],
        ["--","","g",0.6]]
+
+# List of basins with geographical limits to plot
+Basins=np.array([["Parana",-67,-36,-40,-15],["Amazon",-1,-1,-1,-1])
 
 ### EXPLIQUER DEFINITION FILE TYPE ETC
 ### Plus pour vieux modele selection station et longitud latitude correspondante 
@@ -638,23 +642,28 @@ def extract_annualcycle(stname, L, chem_GRDC, y1, y2):
 ############
 ### Add map of GRDC station
 # reprendre avec retrouver dans modèle location exact cf tools !!!!!! - GRDCnew 
-def addcardgrdcnew(stname):
+def addcardgrdcnew(stname, chem_GRDC, basin):
     """
     Add the map with the indication of the station next to the graphic.
     k: int, index of the station
     fig: axis of the figure to plot the map
     """
-    Lst=np.array(Lstold)
-    k=np.where(Lst==stname)[0][0]
+    namegr = importGRDCname(chem_GRDC)
+    i = stgrdcindex(stname, namegr)-1 # car index commence à 1
+
+    lon = importvariable(chem_GRDC, "lon", 1)[i]
+    lat = importvariable(chem_GRDC, "lat", 1)[i]
+    Lbas = np.where(Basins == basin)[0][0]
+    
     ax2 = plt.subplot2grid((3, 5), (2, 4),colspan=1)
-    m = Basemap(projection="cyl", llcrnrlon=-67, llcrnrlat=-36,         \
-                    urcrnrlon=-40, urcrnrlat= -15, resolution="i")
+    m = Basemap(projection="cyl", llcrnrlon=Lbas[1], llcrnrlat=Lbas[2],         \
+                    urcrnrlon=Lbas[3], urcrnrlat= Lbas[4], resolution="i")
     m.arcgisimage(server='http://server.arcgisonline.com/ArcGIS', service = 'World_Physical_Map',epsg=3000,xpixels=300, dpi=300,verbose=True)
     m.drawcountries(linewidth=0.25)
     m.drawcoastlines(linewidth=0.25)
     m.drawrivers(linewidth=0.15,color="b")
     
-    ax2.plot([LonMod[k]],[LatMod[k]],'o',markersize=2,color='r')
+    ax2.plot([lon],[lat],'o',markersize=2,color='r')
     return 
 ### Plot xticks timeseries
 def xtickstimeMonth(y1, y2, ax):
@@ -687,7 +696,7 @@ def xtickstimeMonth(y1, y2, ax):
 ### PLOT GRAPHS ###
 ###################
 ### Plot the annual cycle graphs for a station for a list of data
-def plot_annualcyclestn(stname, L, chem_GRDC,y1,y2, dgraphs): #style included
+def plot_annualcyclestn(stname, L, chem_GRDC,y1,y2, dgraphs, basin): #style included
     """
     Plot the annual cycle between y1 and y2 for GRDC station stname
     between y1 and y2. stle define the style of the corresponding curves for L.
@@ -741,7 +750,7 @@ def plot_annualcyclestn(stname, L, chem_GRDC,y1,y2, dgraphs): #style included
     ax1.set_xticklabels(LabMonths, fontsize=6)
     ax1.tick_params(axis='y', which='major',pad=0.1,labelsize=6)    
     
-    addcardgrdcnew(stname)
+    addcardgrdcnew(stname, chem_GRDC, basin)
     
     legend=ax1.legend(bbox_to_anchor=(1.05, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 1, edgecolor="none")
     Outnum = NumObsStn(chem_GRDC,[stname],y1,y2)
@@ -753,11 +762,20 @@ def plot_annualcyclestn(stname, L, chem_GRDC,y1,y2, dgraphs): #style included
     
     fig.subplots_adjust(left=0.1, right=0.99,bottom=0.1, top=0.93,wspace= 0.04)
     fig.suptitle(r'Annual Cycle '+stname, fontsize=8,y=0.985)#loc="left"
-    fig.savefig(dgraphs+stname+"-Annual_cycle.jpg",dpi=350)
+    fig.savefig(dgraphs+stname.replace(" ","-")+"-Annual_cycle.jpg",dpi=350)
     plt.close()
     return T, M, K
+def plotallstn_annualcycle(Lst, L, chem_GRDC, y1, y2, dgraphs, basin):
+    i=0
+    while i<len(Lst):
+        print "####"
+        print i+1,"/",len(Lst)
+        plot_annualcyclestn(Lst[i], L, chem_GRDC,y1,y2, dgraphs, basin)
+        i=i+1
+
+
 ### Plot the time serie for a station and a list of data
-def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, chem_grid="", chem_grdc_rd=""): #Style included
+def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""): #Style included
     """
     plot the time serie
     """
@@ -802,24 +820,24 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, chem_grid="", chem_grdc
     # xtick
     xtickstimeMonth(y1, y2 , ax1)
     # Map
-    addcardgrdcnew(stname)
+    addcardgrdcnew(stname, chem_GRDC, basin)
     # Legend
     legend=ax1.legend(bbox_to_anchor=(1.05, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 1, edgecolor="none")
     plt.setp(legend.get_title(),fontsize=8)
     # Finalize    
     fig.subplots_adjust(left=0.1, right=0.99,bottom=0.1, top=0.93,wspace= 0.04)
     fig.suptitle(r'Time series '+stname, fontsize=8,y=0.985)#loc="left"
-    fig.savefig(dgraphs+stname+"-timeserie.jpg",dpi=350)
+    fig.savefig(dgraphs+stname.replace(" ","-")+"-timeserie.jpg",dpi=350)
     plt.close()
     
     return 
 ### Plot the time series graph for a list of stations
-def plotallstn(Lst, L, chem_GRDC, y1, y2, dgraphs, chem_grid="", chem_grdc_rd=""):
+def plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""):
     i=0
     while i<len(Lst):
         print "####"
         print i+1,"/",len(Lst)
-        plottimeserie(Lst[i], L, chem_GRDC, y1, y2, style, dgraphs, chem_grid="", chem_grdc_rd="")
+        plottimeserie(Lst[i], L, chem_GRDC, y1, y2, style, dgraphs, chem_grid="", chem_grdc_rd="", basin)
         i=i+1
 
 #####################
@@ -862,3 +880,63 @@ def NumObsStn(chem_GRDC, ListStn, y1, y2):
             y=y+1
         i=i+1
     return OutNum
+
+
+def AvailableStn(chem_GRDC_rd, chem_GRDC, basin AR="False"):
+    # Get stations output list on Parana basin
+    GRDC_rd = NetCDFFile(chem_GRDC_rd, 'r')
+    ind=[]
+    for l in GRDC_rd.variables.keys():
+        if l[0:len(basin)]==basin:
+            ind.append(GRDC_rd.variables[l].Index_of_GRDC_Station)
+    # Get station output information
+    GRDC = NetCDFFile(chem_GRDC, 'r')
+    Name = GRDC.variables["name"][:]
+    country = GRDC.variables["country"]
+    lon = GRDC.variables["lon"][:]
+    lat = GRDC.variables["lat"][:]
+    area = GRDC.variables["area"][:]
+    L=[]
+    if AR==True: Lar=[]
+    i=0
+    while i<len(ind):
+        index=ind[i]-1
+        namest = convertgrdcname(Name[index])
+        pays = convertgrdcname(country[index])
+        L.append([namest,pays, round(area[index]/1000,2), lon[index], lat[index]])
+        if AR==True:
+            if pays=="AR": Lar.append([namest,pays, round(area[index]/1000,2), lon[index], lat[index]])
+        # M[i,0]=namest ; M[i,1]=pays ; M[i,2]=lon[index]; M[i,3]=lat[index]
+        i=i+1
+    if AR==True : 
+        return L, Lar
+    else:
+        return L
+
+
+#### Plot all stn available basin ####
+# Time series
+def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grid_rd=""):
+    Lavst = AvailableStn(chem_GRDC_rd, chem_GRDC, basin AR="False")
+    Lst=[]
+    i=0
+    while i<len(Lavst):
+        Lst.append(Lavst[i][0])
+        i=i+1
+    plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd="")
+    return
+
+# Annual Cycle
+def plotallstn_annualcycle_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid_rd=""):
+    Lavst = AvailableStn(chem_GRDC_rd, chem_GRDC, basin AR="False")
+    Lst=[]
+    i=0
+    while i<len(Lavst):
+        Lst.append(Lavst[i][0])
+        i=i+1
+    plotallstn_annualcycle(Lst, L, chem_GRDC, y1, y2, dgraphs, basin)
+    return
+
+    
+
+
