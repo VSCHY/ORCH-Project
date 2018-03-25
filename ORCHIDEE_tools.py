@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: iso-8859-15 -*-
 # Tools for Python / ORCHIDEE
-# From Anthony Schrapffer
+# From Anthony Schrapffer
 # Working at CIMA (Argentina)
 #
 # This work is licendes under a Creative Commons 
@@ -68,7 +68,7 @@ style=[["-","","k",0.6],
        ["--","","g",0.6]]
 
 # List of basins with geographical limits to plot
-Basins=np.array([["Parana",-67,-36,-40,-15],["Amazon",-1,-1,-1,-1])
+Basins=np.array([["Parana",-67.,-36.,-40.,-15.],["Amazon",-1,-1,-1,-1]])
 
 ### EXPLIQUER DEFINITION FILE TYPE ETC
 ### Plus pour vieux modele selection station et longitud latitude correspondante 
@@ -88,7 +88,7 @@ Basins=np.array([["Parana",-67,-36,-40,-15],["Amazon",-1,-1,-1,-1])
 # Dir cell area grid file made with CDO
 
 
-### ADD FILE WITH BDHI EXTRACTION
+### ADD FILE WITH BDHI EXTRACTION
 ### VOIR COMMENT FAIRE POUR QUE CE FICHIER SE RETROUVE AUTOMATIQUEMENT
 ### CF QUIL LA CONSIDERE COMME UNE LIBRAIRIE !!!
 ### METTRE SUR GIT YOLO
@@ -103,7 +103,7 @@ Basins=np.array([["Parana",-67,-36,-40,-15],["Amazon",-1,-1,-1,-1])
 # importGRDCname: import list of stations name from GRDC file
 # importOLDSIM: import hydrograph / lon / lat / time from ORCHIDEE
 # importGRDCnew: import GRDC hydrograph / time / index correspondance from ORCHIDEE output for GRDC stations
-#                         Fuxing GRDC Module
+#                         Fuxing GRDC Module
 # importNEWSIM: import hydrograph / time / index correspondance for GRDC stations from ORCHIDEE output
 # importTIME: import time on date format from a NetCDF file 
 # importTIMEvalue: import the 2D value of a NetCDF file for a specific timestep
@@ -119,7 +119,7 @@ Basins=np.array([["Parana",-67,-36,-40,-15],["Amazon",-1,-1,-1,-1])
 ############################## FUNCTIONS ###############################
 ########################################################################
 ###################
-### Importation ###
+### Importation ###
 ###################
 ### Import list of stations name from GRDC file
 def importGRDCname(chem_GRDC):
@@ -195,7 +195,7 @@ def importgridarea(chem_file):
 #############
 ### Tools ###
 #############
-### TIME###
+### TIME###
 ### Get index of the beginning a a year in a time array
 def datebeg(dtime,y):
     """
@@ -331,6 +331,17 @@ def getGRDCdata(stn, chem_GRDC, y1, y2):
     print Name[i]
     H=hydrographs[t1:t2+12]
     return H, dtimegr[t1:t2+12]
+#Convert GRDC name
+def convertgrdcname(Namelist):
+    i=len(Namelist)-1
+    while Namelist[i]==" ":
+        i=i-1
+    Name=""
+    j=0
+    while j<=i:
+        Name=Name+Namelist[j]
+        j=j+1
+    return Name
 
 ###################
 ### Preparation ###
@@ -404,7 +415,7 @@ def get_lonlat_stn_model(chem_GRDC, chem_GRDCnew, stname):
 
 
 #####################
-### Data Treatment###
+### Data Treatment###
 #####################
 ### Get variable integrated in subbasin of a station - convert from mm/d to m^3/s - FOR PRECIPITATION AND EVAP
 def get_varmask_stn(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, variable): #ADD GRDC FILE !!!!! 
@@ -473,7 +484,7 @@ def extract_stn(stname, chem_file, filetype, namegr="",
     else:
         print error
         print "Filetype is not well defined"
-### Extract list of data ! 
+### Extract list of data ! 
 def extract_liststn(stname, Li, chem_GRDC, chem_grdcnew="", chem_grid="", chem_grdc_rd=""):
     """
     Construction of hydrographs for station stname
@@ -636,7 +647,7 @@ def extract_annualcycle(stname, L, chem_GRDC, y1, y2):
         return None, None, None, None
 
 #################
-### PLOT DATA ###
+### PLOT DATA ###
 #################
 ### TOOLS###
 ############
@@ -653,11 +664,11 @@ def addcardgrdcnew(stname, chem_GRDC, basin):
 
     lon = importvariable(chem_GRDC, "lon", 1)[i]
     lat = importvariable(chem_GRDC, "lat", 1)[i]
-    Lbas = np.where(Basins == basin)[0][0]
-    
+    ibas = np.where(Basins == basin)[0][0]
+    Lbas= Basins[ibas]
     ax2 = plt.subplot2grid((3, 5), (2, 4),colspan=1)
-    m = Basemap(projection="cyl", llcrnrlon=Lbas[1], llcrnrlat=Lbas[2],         \
-                    urcrnrlon=Lbas[3], urcrnrlat= Lbas[4], resolution="i")
+    m = Basemap(projection="cyl", llcrnrlon=float(Lbas[1]), llcrnrlat=float(Lbas[2]),         \
+                    urcrnrlon=float(Lbas[3]), urcrnrlat= float(Lbas[4]), resolution="i")
     m.arcgisimage(server='http://server.arcgisonline.com/ArcGIS', service = 'World_Physical_Map',epsg=3000,xpixels=300, dpi=300,verbose=True)
     m.drawcountries(linewidth=0.25)
     m.drawcoastlines(linewidth=0.25)
@@ -762,7 +773,7 @@ def plot_annualcyclestn(stname, L, chem_GRDC,y1,y2, dgraphs, basin): #style incl
     
     fig.subplots_adjust(left=0.1, right=0.99,bottom=0.1, top=0.93,wspace= 0.04)
     fig.suptitle(r'Annual Cycle '+stname, fontsize=8,y=0.985)#loc="left"
-    fig.savefig(dgraphs+stname.replace(" ","-")+"-Annual_cycle.jpg",dpi=350)
+    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-")+"-Annual_cycle.jpg",dpi=350)
     plt.close()
     return T, M, K
 def plotallstn_annualcycle(Lst, L, chem_GRDC, y1, y2, dgraphs, basin):
@@ -774,7 +785,7 @@ def plotallstn_annualcycle(Lst, L, chem_GRDC, y1, y2, dgraphs, basin):
         i=i+1
 
 
-### Plot the time serie for a station and a list of data
+### Plot the time serie for a station and a list of data
 def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""): #Style included
     """
     plot the time serie
@@ -784,7 +795,6 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     print stname   
     if debug: print "Get data"
     # Get data
-    print
     out = extract_timeseries(stname, L, chem_GRDC, y1, y2, chem_grid, chem_grdc_rd)  
     
     if out is None:
@@ -827,7 +837,7 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     # Finalize    
     fig.subplots_adjust(left=0.1, right=0.99,bottom=0.1, top=0.93,wspace= 0.04)
     fig.suptitle(r'Time series '+stname, fontsize=8,y=0.985)#loc="left"
-    fig.savefig(dgraphs+stname.replace(" ","-")+"-timeserie.jpg",dpi=350)
+    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-")+"-timeserie.jpg",dpi=350)
     plt.close()
     
     return 
@@ -837,11 +847,11 @@ def plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="
     while i<len(Lst):
         print "####"
         print i+1,"/",len(Lst)
-        plottimeserie(Lst[i], L, chem_GRDC, y1, y2, style, dgraphs, chem_grid="", chem_grdc_rd="", basin)
+        plottimeserie(Lst[i], L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd)
         i=i+1
 
 #####################
-### Help Analysis ###
+### Help Analysis ###
 #####################
 def NumObsStn(chem_GRDC, ListStn, y1, y2):
     """
@@ -882,7 +892,7 @@ def NumObsStn(chem_GRDC, ListStn, y1, y2):
     return OutNum
 
 
-def AvailableStn(chem_GRDC_rd, chem_GRDC, basin AR="False"):
+def AvailableStn(chem_GRDC_rd, chem_GRDC, basin, AR="False"):
     # Get stations output list on Parana basin
     GRDC_rd = NetCDFFile(chem_GRDC_rd, 'r')
     ind=[]
@@ -916,8 +926,9 @@ def AvailableStn(chem_GRDC_rd, chem_GRDC, basin AR="False"):
 
 #### Plot all stn available basin ####
 # Time series
-def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grid_rd=""):
-    Lavst = AvailableStn(chem_GRDC_rd, chem_GRDC, basin AR="False")
+def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grdc_rd=""):
+    print basin
+    Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR="False")
     Lst=[]
     i=0
     while i<len(Lavst):
@@ -927,8 +938,8 @@ def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid=
     return
 
 # Annual Cycle
-def plotallstn_annualcycle_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid_rd=""):
-    Lavst = AvailableStn(chem_GRDC_rd, chem_GRDC, basin AR="False")
+def plotallstn_annualcycle_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grdc_rd=""):
+    Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR="False")
     Lst=[]
     i=0
     while i<len(Lavst):
