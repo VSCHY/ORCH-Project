@@ -926,7 +926,7 @@ def AvailableStn(chem_GRDC_rd, chem_GRDC, basin, AR="False"):
 
 #### Plot all stn available basin ####
 # Time series
-def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grdc_rd=""):
+def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""): #actualiser format
     print basin
     Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR="False")
     Lst=[]
@@ -934,7 +934,7 @@ def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grdc_
     while i<len(Lavst):
         Lst.append(Lavst[i][0])
         i=i+1
-    plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd="")
+    plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd)
     return
 
 # Annual Cycle
@@ -945,9 +945,12 @@ def plotallstn_annualcycle_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grdc
     while i<len(Lavst):
         Lst.append(Lavst[i][0])
         i=i+1
-    plotallstn_annualcycle(Lst, L, chem_GRDC, y1, y2, dgraphs, basin)
+    plotallstn_annualcycle(Lst, L, chem_GRDC, y1, y2, dgraphs, basin) # Pas besoin de chemgrid ni chemgrdcrd???
     return
 
     
 
-
+### TO DO ###
+#############
+#*ajouter dépendance dir_GRDC et dir_GRDC_rd
+#*Cas station pas disponible pour l'une des liste - message d'erreur mais faire le graphique sans

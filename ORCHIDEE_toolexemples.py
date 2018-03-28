@@ -33,6 +33,10 @@ LatMod=[-21.25,-25.75,-23.25,-24.25,-22.75,-24.25,-21.25,-20.25,-26.75,-21.25,-2
         -23.25,-17.75,-25.25,-28.25,-27.25,-26.25,-22.25,-23.75,-19.75,-26.25,-23.25,
         -16.25,-32.25]
 
+
+
+
+
 ### ANNUAL CYCLE ###
 # Parameters
 dgraphs="/home/direction/of/your/graph/"
@@ -61,6 +65,10 @@ L=[La, Lb, Lc]
 # dgraphs: direction where the graph will be saved
 # basin: name of the basin, must be in the graph
 TT =OR.plot_annualcyclestn(stname, L, chem_GRDC, y1, y2, dgraphs, basin)
+
+
+
+
 
 ### TIME SERIE  ###
 # Parameters
@@ -101,5 +109,5 @@ OR.plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_g
 
 # Plot all station from list Lst
 Lst=[stname1, stname2,...]
-OR.plotallstn(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd)
+OR.plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd)
 
