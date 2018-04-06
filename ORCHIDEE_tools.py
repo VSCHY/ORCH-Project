@@ -133,7 +133,9 @@ def importGRDCname(chem_GRDC):
 ### Import hydrograph / lon / lat / time from ORCHIDEE
 def importOLDSIM(chem_orchold):
     salid = NetCDFFile(chem_orchold, 'r')
-    timv1=salid.variables['time']
+    timv1=salid.variables['time_counter']
+    #old sim from hydra ?
+    #timv1=salid.variables['time']
     time1=timv1[:]  
     dtime1 = num2date(time1,timv1.units)
     lon1= salid.variables['lon'][:]
@@ -892,7 +894,7 @@ def NumObsStn(chem_GRDC, ListStn, y1, y2):
     return OutNum
 
 
-def AvailableStn(chem_GRDC_rd, chem_GRDC, basin, AR="False"):
+def AvailableStn(chem_GRDC_rd, chem_GRDC, basin, AR=False, BR=False):
     # Get stations output list on Parana basin
     GRDC_rd = NetCDFFile(chem_GRDC_rd, 'r')
     ind=[]
@@ -909,6 +911,8 @@ def AvailableStn(chem_GRDC_rd, chem_GRDC, basin, AR="False"):
     L=[]
     if AR==True: Lar=[]
     i=0
+    if BR==True: Lbr=[]
+    i=0
     while i<len(ind):
         index=ind[i]-1
         namest = convertgrdcname(Name[index])
@@ -916,10 +920,17 @@ def AvailableStn(chem_GRDC_rd, chem_GRDC, basin, AR="False"):
         L.append([namest,pays, round(area[index]/1000,2), lon[index], lat[index]])
         if AR==True:
             if pays=="AR": Lar.append([namest,pays, round(area[index]/1000,2), lon[index], lat[index]])
+        if BR==True:
+            if pays=="BR": Lbr.append([namest,pays, round(area[index]/1000,2), lon[index], lat[index]])
         # M[i,0]=namest ; M[i,1]=pays ; M[i,2]=lon[index]; M[i,3]=lat[index]
         i=i+1
-    if AR==True : 
-        return L, Lar
+    if AR==True :
+        if BR==True :
+            return L, Lar, Lbr
+        else:
+            return L, Lar
+    elif BR==True : 
+        return L, Lbr
     else:
         return L
 
@@ -928,7 +939,7 @@ def AvailableStn(chem_GRDC_rd, chem_GRDC, basin, AR="False"):
 # Time series
 def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""): #actualiser format
     print basin
-    Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR="False")
+    Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR=False, BR=False)
     Lst=[]
     i=0
     while i<len(Lavst):
@@ -939,7 +950,7 @@ def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid=
 
 # Annual Cycle
 def plotallstn_annualcycle_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grdc_rd=""):
-    Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR="False")
+    Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR=False, BR=False)
     Lst=[]
     i=0
     while i<len(Lavst):

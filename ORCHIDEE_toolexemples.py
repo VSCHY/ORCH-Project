@@ -111,3 +111,6 @@ OR.plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_g
 Lst=[stname1, stname2,...]
 OR.plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd)
 
+
+#All station from a basin (Same parameter in the GRDC module and same original file)
+OR.plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""): #actualiser format
