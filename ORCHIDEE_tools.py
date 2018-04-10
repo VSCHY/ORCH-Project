@@ -68,7 +68,10 @@ style=[["-","","k",0.6],
        ["--","","g",0.6]]
 
 # List of basins with geographical limits to plot
-Basins=np.array([["Parana",-67.,-36.,-40.,-15.],["Amazon",-1,-1,-1,-1]])
+# nlon, nlat, xlon, xlat
+Basins=np.array([["Parana",-67.,-36.,-40.,-15.],["Uruguay",-58.,-37.,-47.,-25.],["Colorado",-72.,-39.,-57.,-26.],["Magdalena",-79.,2.,-69.,13.],["Negro_Arg",-73.,-41.,-61.,-36.],["Salado",-64.,-38.,-54.,-33.],["Essequibo",-63.,0.,-53.,8.], ["Orinoco",-76.,1.,-57.,12.],["Sali_Dulce_Primero",-70.,-30.,-58.,-25.],["BELEN_ABAUCAN_PICHANAS",-70.,-29.,-63.,-24.],["MEARIM_CORDA_GR",-49.,-6.,-39.,0.],["Araguaia",-56.,-16.,-41.,0.],["Amazon",-81.,-22.,-30.,8.]])
+
+
 
 ### EXPLIQUER DEFINITION FILE TYPE ETC
 ### Plus pour vieux modele selection station et longitud latitude correspondante 
@@ -938,9 +941,10 @@ def AvailableStn(chem_GRDC_rd, chem_GRDC, basin, AR=False, BR=False):
 #### Plot all stn available basin ####
 # Time series
 def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""): #actualiser format
-    print basin
+    print "###",basin,"###"
     Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR=False, BR=False)
     Lst=[]
+    if len(Lavst)==0: print "No Available Station"
     i=0
     while i<len(Lavst):
         Lst.append(Lavst[i][0])
@@ -950,8 +954,10 @@ def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid=
 
 # Annual Cycle
 def plotallstn_annualcycle_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grdc_rd=""):
+    print "###",basin,"###"
     Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR=False, BR=False)
     Lst=[]
+    if len(Lavst)==0: print "No Available Station" 
     i=0
     while i<len(Lavst):
         Lst.append(Lavst[i][0])
