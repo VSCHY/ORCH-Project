@@ -69,7 +69,7 @@ style=[["-","","k",0.6],
 
 # List of basins with geographical limits to plot
 # nlon, nlat, xlon, xlat
-Basins=np.array([["Parana",-67.,-36.,-40.,-15.],["Uruguay",-58.,-37.,-47.,-25.],["Colorado",-72.,-39.,-57.,-26.],["Magdalena",-79.,2.,-69.,13.],["Negro_Arg",-73.,-41.,-61.,-36.],["Salado",-64.,-38.,-54.,-33.],["Essequibo",-63.,0.,-53.,8.], ["Orinoco",-76.,1.,-57.,12.],["Sali_Dulce_Primero",-70.,-30.,-58.,-25.],["BELEN_ABAUCAN_PICHANAS",-70.,-29.,-63.,-24.],["MEARIM_CORDA_GR",-49.,-6.,-39.,0.],["Araguaia",-56.,-16.,-41.,0.],["Amazon",-81.,-22.,-30.,8.]])
+Basins=np.array([["Parana",-67.,-36.,-40.,-15.],["Uruguay",-63.,-37.,-47.,-25.],["Colorado",-72.,-45.,-57.,-26.],["Magdalena",-79.,2.,-69.,13.],["Negro_Arg",-73.,-44.,-61.,-36.],["Salado",-64.,-38.,-54.,-33.],["Essequibo",-63.,0.,-53.,8.], ["Orinoco",-76.,1.,-57.,12.],["Sali_Dulce_Primero",-70.,-35.,-58.,-22.],["BELEN_ABAUCAN_PICHANAS",-72.,-34.,-60.,-20.],["MEARIM_CORDA_GR",-49.,-10.,-39.,2.],["Araguaia",-58.,-25.,-33.,1.],["Amazon",-81.,-22.,-30.,8.]])
 
 
 
@@ -478,6 +478,7 @@ def extract_stn(stname, chem_file, filetype, namegr="",
             dtime0, hydro0, index0 = importGRDCnew(chem_file)
             hydro0=ma.masked_where(hydro0<0, hydro0)
         ind=stoutputindex(stname, namegr, index0)
+
         if ind == None:
             return None, None
         hydrostn = hydro0[:,ind]
@@ -728,6 +729,9 @@ def plot_annualcyclestn(stname, L, chem_GRDC,y1,y2, dgraphs, basin): #style incl
     """
     debug = None
     print stname    
+    doc=open(dgraphs+basin+"stn.txt","w")
+    doc.write(stname)
+    doc.close()
 
     X=np.arange(1,13,1)  
     # Get data
@@ -777,8 +781,8 @@ def plot_annualcyclestn(stname, L, chem_GRDC,y1,y2, dgraphs, basin): #style incl
     plt.setp(legend.get_title(),fontsize=8)
     
     fig.subplots_adjust(left=0.1, right=0.99,bottom=0.1, top=0.93,wspace= 0.04)
-    fig.suptitle(r'Annual Cycle '+stname, fontsize=8,y=0.985)#loc="left"
-    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-")+"-Annual_cycle.jpg",dpi=350)
+    fig.suptitle(r'Annual Cycle '+stname.replace("Ö","o"), fontsize=8,y=0.985)#loc="left"
+    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("Ö","o")+"-Annual_cycle.jpg",dpi=350)
     plt.close()
     return T, M, K
 def plotallstn_annualcycle(Lst, L, chem_GRDC, y1, y2, dgraphs, basin):
@@ -797,7 +801,12 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     """
     debug = None
     print "####"
-    print stname   
+    print stname.replace("\xd6","o")
+    
+    doc=open(dgraphs+basin+"stn.txt","a")
+    doc.write("\n"+stname)
+    doc.close()
+   
     if debug: print "Get data"
     # Get data
     out = extract_timeseries(stname, L, chem_GRDC, y1, y2, chem_grid, chem_grdc_rd)  
@@ -841,8 +850,8 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     plt.setp(legend.get_title(),fontsize=8)
     # Finalize    
     fig.subplots_adjust(left=0.1, right=0.99,bottom=0.1, top=0.93,wspace= 0.04)
-    fig.suptitle(r'Time series '+stname, fontsize=8,y=0.985)#loc="left"
-    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-")+"-timeserie.jpg",dpi=350)
+    fig.suptitle(r'Time series '+stname.replace("\xd6","o"), fontsize=8,y=0.985)#loc="left"
+    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-timeserie.jpg",dpi=350)
     plt.close()
     
     return 
@@ -942,8 +951,12 @@ def AvailableStn(chem_GRDC_rd, chem_GRDC, basin, AR=False, BR=False):
 # Time series
 def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""): #actualiser format
     print "###",basin,"###"
+    doc=open(dgraphs+basin+"stn.txt","w")
+    doc.write("### "+basin+" ###")
+    doc.close()
     Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR=False, BR=False)
     Lst=[]
+
     if len(Lavst)==0: print "No Available Station"
     i=0
     while i<len(Lavst):
@@ -955,6 +968,10 @@ def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid=
 # Annual Cycle
 def plotallstn_annualcycle_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grdc_rd=""):
     print "###",basin,"###"
+    doc=open(dgraphs+basin+"stn.txt","w")
+    doc.write("### "+basin+" ###")
+    doc.close()
+
     Lavst = AvailableStn(chem_grdc_rd, chem_GRDC, basin, AR=False, BR=False)
     Lst=[]
     if len(Lavst)==0: print "No Available Station" 
