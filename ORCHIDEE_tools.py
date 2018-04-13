@@ -191,7 +191,10 @@ def importvariable(chem_file, varname, dim):
         var = salid.variables[varname][:,:]
     if dim == 3:
         var = salid.variables[varname][:,:,:]
+    if dim == 4:
+        var = salid.variables[varname][:,:,:,:]
     return var
+
 ### Import the cell area array (made from cdo cellarea)
 def importgridarea(chem_file):
     gridarea = importvariable(chem_file, "cell_area", 2) # (lat,lon) in km^2
@@ -365,7 +368,8 @@ def stgrdcindex(stn,namegr):
        stname = ""
        for ic in range(len(namegr[i,:])):
            stname  = stname + namegr[i,ic]
-       if stname[0:lenst]==stn: # Name from GRDC = stn (station wanted)
+       
+       if stname[0:lenst] == stn: # Name from GRDC = stn (station wanted)
            return i+1 # Because index is from 1-190, python starts from 0 not 1
        i=i+1
     print error
@@ -423,7 +427,7 @@ def get_lonlat_stn_model(chem_GRDC, chem_GRDCnew, stname):
 ### Data Treatment###
 #####################
 ### Get variable integrated in subbasin of a station - convert from mm/d to m^3/s - FOR PRECIPITATION AND EVAP
-def get_varmask_stn(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, variable): #ADD GRDC FILE !!!!! 
+def get_varmask_stn(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, variable,conv_rain): #ADD GRDC FILE !!!!! 
     Debug = False
     if Debug: print "start"
     # Get index
@@ -452,12 +456,16 @@ def get_varmask_stn(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, nameg
         if i==(len(M)*3/4): print "75%"
         vari=importTIMEvalue(chem_file, variable, i)
         # mm/d = kg/m^2/d = m^3/1000/m^2/d = m/1000/s/86400 | * upstream en m^2
-        M[i] = ma.sum(vari[:,:]*mask[:,:]*gridarea)/1000/86400 
+        if conv_rain:
+            M[i] = ma.sum(vari[:,:]*mask[:,:]*gridarea)/1000/86400
+        else:
+            stot = ma.sum(mask[:,:]*gridarea) 
+            M[i] = ma.sum(vari[:,:]*mask[:,:]*gridarea)/stot
         i=i+1
     return M, dtime
 ### Extract data from a station from GRDC output, rain/evap data, ORCHIDEE hydrographs (needs correspondance of lon/lat)
 def extract_stn(stname, chem_file, filetype, namegr="", 
-                chem_grid="", chem_grdc="", chem_grdc_rd=""): #Last part for rain/evap
+                chem_grid="", chem_grdc="", chem_grdc_rd="", conv_rain=True): #Last part for rain/evap
     """
     Extract the hydrographs data for a specific station.
     stname: string, name of the station.
@@ -485,7 +493,10 @@ def extract_stn(stname, chem_file, filetype, namegr="",
         return hydrostn, dtime0
 
     elif filetype == "rain" or filetype == "evap":
-        outdata, dtime = get_varmask_stn(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, filetype) 
+        if conv_rain:
+            outdata, dtime = get_varmask_stn(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, filetype, conv_rain=True)
+        else:
+            outdata, dtime = get_varmask_stn(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, filetype, conv_rain=False)
         return outdata, dtime
     else:
         print error
@@ -506,17 +517,22 @@ def extract_liststn(stname, Li, chem_GRDC, chem_grdcnew="", chem_grid="", chem_g
         L0=Li[i]
         if L0[1]=="old":
             data, dtime = extract_stn(stname, L0[0], "old")
-            outlist.append([L0[2], dtime, data])  
+            outlist.append([L0[2], dtime, data, True])  
             
         ### mettre ensemble et mettre Name pour tous re grouper au moins
         elif L0[1]=="new" or L0[1]=="GRDCnew":
             data, dtime = extract_stn(stname, L0[0], L0[1], namegr=Name)
-            outlist.append([L0[2], dtime, data])
+            outlist.append([L0[2], dtime, data, True])
             
         elif L0[1] == "rain" or L0[1] == "evap":
-            data, dtime = extract_stn(stname, L0[0], L0[1], namegr=Name, chem_grid=chem_grid,
-                                      chem_grdc=chem_grdcnew, chem_grdc_rd=chem_grdc_rd)
-            outlist.append([L0[2], dtime, data])
+            if L0[3]: 
+                data, dtime = extract_stn(stname, L0[0], L0[1], namegr=Name, chem_grid=chem_grid,
+                                      chem_grdc=chem_grdcnew, chem_grdc_rd=chem_grdc_rd, conv_rain=True)
+            else:
+                data, dtime = extract_stn(stname, L0[0], L0[1], namegr=Name, chem_grid=chem_grid,
+                                      chem_grdc=chem_grdcnew, chem_grdc_rd=chem_grdc_rd, conv_rain=False)
+            outlist.append([L0[2], dtime, data, L0[3]]) 
+            # MODIF L0[3] - si True m^3/s
             
         else:
             print error
@@ -562,7 +578,7 @@ def extract_timeseries(stname, L, chem_GRDC, y1, y2, chem_grid="", chem_grdc_rd=
             A=outlist[i]
             tbeg=datebeg(A[1],y1)
             tend=finddate(A[1],31,12,y2)
-            H.append([A[0],A[1][tbeg:(tend+1)],ma.array(A[2][tbeg:(tend+1)])])
+            H.append([A[0],A[1][tbeg:(tend+1)],ma.array(A[2][tbeg:(tend+1)]), A[3]])
             if debug: print A[1][tbeg]
             if debug: print A[1][tend]
             if debug: print len(H[i][2]) # Vérification même taille de liste
@@ -710,6 +726,15 @@ def xtickstimeMonth(y1, y2, ax):
     plt.tick_params(axis ='both', which='major', length=4)
     return 
 
+def align_yaxis(ax1, v1, ax2, v2):
+    """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
+    _, y1 = ax1.transData.transform((0, v1))
+    _, y2 = ax2.transData.transform((0, v2))
+    inv = ax2.transData.inverted()
+    _, dy = inv.transform((0, 0)) - inv.transform((0, y1-y2))
+    miny, maxy = ax2.get_ylim()
+    ax2.set_ylim(miny+dy, maxy+dy)
+
 ### PLOT GRAPHS ###
 ###################
 ### Plot the annual cycle graphs for a station for a list of data
@@ -772,14 +797,20 @@ def plot_annualcyclestn(stname, L, chem_GRDC,y1,y2, dgraphs, basin): #style incl
     
     addcardgrdcnew(stname, chem_GRDC, basin)
     
-    legend=ax1.legend(bbox_to_anchor=(1.05, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 1, edgecolor="none")
+    legend=ax1.legend(bbox_to_anchor=(1., 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 2, edgecolor="none")
     Outnum = NumObsStn(chem_GRDC,[stname],y1,y2)
     a=np.sum(Outnum[0,:])
-    txt=str(round(int(a),0))+"/"+str((y2-y1+1)*12)+" months"
-    plt.text(1.045,0.45,"Avalaible data",transform=ax1.transAxes, fontsize=6)
-    plt.text(1.045,0.4,txt, transform=ax1.transAxes, fontsize=6)
-    plt.setp(legend.get_title(),fontsize=8)
-    
+
+    # Get details info about station
+    det = getDetails(stname, L, chem_GRDC, chem_Restart)
+    print det
+    ax3 = plt.subplot2grid((3, 5), (1, 4),colspan=1)
+    ax3.xaxis.set_visible(False)
+    ax3.yaxis.set_visible(False)
+    ax3.set_frame_on(False)
+    plt.text(0,0,"Available Data:\n"+str(round(int(a),0))+"/"+str((y2-y1+1)*12)+" months\n" +"Lon,Lat: "+str(round(det[1],2))+", " + str(round(det[0],2))+"\n Up. Area: "+str(int(det[2]))+" km$^2$\n Altitude: "+str(int(det[3]))+" m\n Mean topoindex:\n"+str(int(det[4]))+" m", fontsize = 5)
+
+
     fig.subplots_adjust(left=0.1, right=0.99,bottom=0.1, top=0.93,wspace= 0.04)
     fig.suptitle(r'Annual Cycle '+stname.replace("Ö","o"), fontsize=8,y=0.985)#loc="left"
     fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("Ö","o")+"-Annual_cycle.jpg",dpi=350)
@@ -794,14 +825,17 @@ def plotallstn_annualcycle(Lst, L, chem_GRDC, y1, y2, dgraphs, basin):
         i=i+1
 
 
+
+
+
 ### Plot the time serie for a station and a list of data
-def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""): #Style included
+def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd="", chem_Restart = ""): #Style included
     """
     plot the time serie
     """
     debug = None
     print "####"
-    print stname.replace("\xd6","o")
+    #print stname.replace("\xd6","o")
     
     doc=open(dgraphs+basin+"stn.txt","a")
     doc.write("\n"+stname)
@@ -824,16 +858,26 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     if debug: print "Plot"
     # PLOT
     fig=plt.figure(figsize=(4.5,2.5),dpi=250)
-    ax1 = plt.subplot2grid((1, 5), (0, 0), colspan=4)   
+    ax1 = plt.subplot2grid((1, 6), (0, 0), colspan=4)   
     i=0
     #X=np.arange(0,len(out[i][1]))
     X=np.arange(0,(y2-y1+1)*12)
     
+
+    #### REF
+    ax4 = ax1.twinx()
+    ax4.yaxis.tick_right()
+    
     while i<len(out):
         print L[i][2]
         out0=monthmeantot(out[i][2],out[i][1],y1,y2) #data dtime y1 y2
-        print "Mean value : ",round(ma.mean(out0/1000),2)
-        ax1.plot(X, out0/1000, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=1,lw=style[i][3], markevery = 10)
+        if out[i][3]:
+            print "Mean value : ",round(ma.mean(out0/1000),2),"10^3 m^3/s"
+            ax1.plot(X, out0/1000, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=1,lw=style[i][3], markevery = 10)
+        else:
+            print "Mean value : ",round(ma.mean(out0),2),"mm/day"
+            print out0
+            ax4.plot(X, out0, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=1,lw=style[i][3], markevery = 1)
         i=i+1
     out00=[0]*len(X)
     ax1.plot(X, out00, color = "black" , ls="-", lw=0.2)
@@ -841,20 +885,38 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     # ytick    
     ax1.set_ylabel('($10^3 m^3/s$)',fontsize=6,labelpad=3,rotation=90)
     plt.setp(ax1.get_yticklabels(), fontsize=4)
+    ax4.set_ylabel('($mm/day$)',fontsize=6,labelpad=3,rotation=90)
+    plt.setp(ax4.get_yticklabels(), fontsize=4)
     # xtick
     xtickstimeMonth(y1, y2 , ax1)
     # Map
     addcardgrdcnew(stname, chem_GRDC, basin)
     # Legend
-    legend=ax1.legend(bbox_to_anchor=(1.05, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 1, edgecolor="none")
+    align_yaxis(ax1, 0, ax4, 0)
+    legend=ax1.legend(bbox_to_anchor=(1.3, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 2, edgecolor="none")
     plt.setp(legend.get_title(),fontsize=8)
+
+    # Get details info about station
+    det = getDetails(stname, L, chem_GRDC, chem_Restart)
+    print det
+    ax3 = plt.subplot2grid((3, 6), (1, 5),colspan=1)
+    ax3.xaxis.set_visible(False)
+    ax3.yaxis.set_visible(False)
+    ax3.set_frame_on(False)
+    plt.text(0,0,"Lon,Lat: \\"+str(round(det[1],2))+", " + str(round(det[0],2))+"\n Up. Area: "+str(int(det[2]))+" km$^2$\n Altitude: "+str(int(det[3]))+" m\n Mean topoindex:\n"+str(int(det[4]))+" m", fontsize = 5)
+
     # Finalize    
-    fig.subplots_adjust(left=0.1, right=0.99,bottom=0.1, top=0.93,wspace= 0.04)
-    fig.suptitle(r'Time series '+stname.replace("\xd6","o"), fontsize=8,y=0.985)#loc="left"
-    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-timeserie.jpg",dpi=350)
+    fig.subplots_adjust(left=0.1, right=0.85,bottom=0.1, top=0.93,wspace= 0.04)
+    fig.suptitle(r'Time series '+stname, fontsize=8,y=0.985)#loc="left"
+    if "xd6" in stname:
+        fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-timeserie.jpg",dpi=350)
+    else:
+        fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-")+"-timeserie.jpg",dpi=350)
     plt.close()
-    
     return 
+
+
+
 ### Plot the time series graph for a list of stations
 def plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""):
     i=0
@@ -988,3 +1050,83 @@ def plotallstn_annualcycle_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grdc
 #############
 #*ajouter dépendance dir_GRDC et dir_GRDC_rd
 #*Cas station pas disponible pour l'une des liste - message d'erreur mais faire le graphique sans
+
+
+
+#### In work ####
+def getDetails(stn, L, chem_GRDC, chem_Restart):
+    
+    namegr = importGRDCname(chem_GRDC)
+    
+    i=0
+    while i<len(L):
+        if L[i][1]=="GRDCnew":
+            chem_GRDCnew = L[i][0]
+            break
+        if i == len(L)-1:
+            print "Error - No GRDC Data"
+            return None
+        i=i+1
+    
+    index = importvariable(chem_GRDCnew, 'Index_Stn_GRDC',1)
+    #(lon / lat stn from GRDC new)
+    i = stoutputindex(stn, namegr, index)
+    Lat_Stn_GRDC = importvariable(chem_GRDCnew, "Lat_Stn_GRDC",1)[i]
+    Lon_Stn_GRDC = importvariable(chem_GRDCnew, "Lon_Stn_GRDC",1)[i]
+    
+    alpha = importvariable(chem_GRDCnew, "Ox_Stn_Model",1)[i]
+    beta = importvariable(chem_GRDCnew, "Ox_Stn_Model",1)[i]
+
+    Lon_Stn_Model = importvariable(chem_Restart, "nav_lon",2)[0,int(alpha)]
+    Lat_Stn_Model = importvariable(chem_Restart, "nav_lat",2)[int(beta),0]
+    
+    # From GRDC
+    j = stgrdcindex(stn, namegr)-1 # because here python index, start 0
+    area =  importvariable(chem_GRDC, "area",1)[j]
+    altitude =  importvariable(chem_GRDC, "altitude",1)[j]
+
+    # From restart - extraire fichier necessaire
+    topo = gettopo(chem_Restart,Lon_Stn_Model, Lat_Stn_Model)
+    # Rearange Details
+    details = [Lat_Stn_GRDC,Lon_Stn_GRDC, area, altitude, topo]
+    return details
+
+
+def gettopo(chem_Restart,Lon_Stn_Model, Lat_Stn_Model):
+    # navlon navlat
+    lon = importvariable(chem_Restart, "nav_lon",2)[0,:]
+    lat = importvariable(chem_Restart, "nav_lat",2)[:,0]
+    nlon, nlat = lonlatij(lon, lat, Lon_Stn_Model, Lat_Stn_Model)
+    topo = importvariable(chem_Restart, "topoindex",4)[0,0,nlat,nlon]
+    # check pas influence z_h
+    a= np.array(importvariable(chem_Restart, "topoindex",4)[0,:,nlat,nlon])
+    topomean = np.mean (a)
+    return topomean
+
+# Double axe
+"""
+ax4 = ax1.twinx()
+ax2.plot()
+X, out0/1000
+# ytick    
+    ax4.set_ylabel('($mm/day$)',fontsize=6,labelpad=3,rotation=90)
+    plt.setp(ax1.get_yticklabels(), fontsize=4)
+
+
+    out0=monthmeantot(out[i][2],out[i][1],y1,y2) #data dtime y1 y2
+    print "Mean value : ",round(ma.mean(out0/1000),2)
+    ax1.plot(X, out0, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=1,lw=style[i][3], markevery = 10)
+    i=i+1
+
+# Ajout a ajouter dans liste dans le cas rain - evap : conv true ou faux + ajout param ds out, True par defaut reste + False si choix pr rain
+"""
+### 2eme axe a tester sur time serie puis a integer sur annual cycle
+# Tester sur corrientes
+
+#GRDC file
+"area"
+"altitude"
+#Restart - besoin d'ajouter ds fichier necessaire mais juste pour plot et cette fonction
+#"Topographic index" - pour lieu de la station (lien Lat_Stn_Model - ou voir si i model )
+	# possibilite de checker aussi pr topo Ox_Stn_Model / Oy_Stn_Model voir si correspond - pr simplifier plus tard
+
