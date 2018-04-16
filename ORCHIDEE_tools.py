@@ -63,7 +63,7 @@ LatMod=[-21.25,-25.75,-23.25,-24.25,-22.75,-24.25,-21.25,-20.25,-26.75,-21.25,-2
 # Style to plot
 style=[["-","","k",0.6],
        ["-","x","r",0.6],
-       ["--","o","#dc6900",0.6],
+       ["--","o","#dc6900",0.4],
        ["-.","","b",0.4],
        ["--","","g",0.6]]
 
@@ -892,7 +892,7 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     # Map
     addcardgrdcnew(stname, chem_GRDC, basin)
     # Legend
-    align_yaxis(ax1, 0, ax4, 0)
+    #align_yaxis(ax1, 0, ax4, 0)
     legend=ax1.legend(bbox_to_anchor=(1.3, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 2, edgecolor="none")
     plt.setp(legend.get_title(),fontsize=8)
 
