@@ -532,7 +532,6 @@ def extract_liststn(stname, Li, chem_GRDC, chem_grdcnew="", chem_grid="", chem_g
                 data, dtime = extract_stn(stname, L0[0], L0[1], namegr=Name, chem_grid=chem_grid,
                                       chem_grdc=chem_grdcnew, chem_grdc_rd=chem_grdc_rd, conv_rain=False)
             outlist.append([L0[2], dtime, data, L0[3]]) 
-            # MODIF L0[3] - si True m^3/s
             
         else:
             print error
@@ -688,7 +687,7 @@ def addcardgrdcnew(stname, chem_GRDC, basin):
     lat = importvariable(chem_GRDC, "lat", 1)[i]
     ibas = np.where(Basins == basin)[0][0]
     Lbas= Basins[ibas]
-    ax2 = plt.subplot2grid((3, 5), (2, 4),colspan=1)
+    ax2 = plt.subplot2grid((3, 10), (2, 8),colspan=2)
     m = Basemap(projection="cyl", llcrnrlon=float(Lbas[1]), llcrnrlat=float(Lbas[2]),         \
                     urcrnrlon=float(Lbas[3]), urcrnrlat= float(Lbas[4]), resolution="i")
     m.arcgisimage(server='http://server.arcgisonline.com/ArcGIS', service = 'World_Physical_Map',epsg=3000,xpixels=300, dpi=300,verbose=True)
@@ -720,20 +719,21 @@ def xtickstimeMonth(y1, y2, ax):
     Ti.append(len(dtime)-1)
     Tii.append(y2+1)
 
-    plt.xticks(Ti, Tii, rotation='horizontal',fontsize=6)
+    plt.xticks(Ti, Tii, rotation='horizontal',fontsize=1)
     ax.xaxis.set_minor_locator(AutoMinorLocator(12))
     plt.tick_params(which='minor', length=2, color='grey')
     plt.tick_params(axis ='both', which='major', length=4)
+
+    ax.tick_params(axis='x', pad=1)
+
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(5)
+        tick.label.set_rotation(45)
+
     return 
 
-def align_yaxis(ax1, v1, ax2, v2):
-    """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
-    _, y1 = ax1.transData.transform((0, v1))
-    _, y2 = ax2.transData.transform((0, v2))
-    inv = ax2.transData.inverted()
-    _, dy = inv.transform((0, 0)) - inv.transform((0, y1-y2))
-    miny, maxy = ax2.get_ylim()
-    ax2.set_ylim(miny+dy, maxy+dy)
+
+
 
 ### PLOT GRAPHS ###
 ###################
@@ -792,7 +792,7 @@ def plot_annualcyclestn(stname, L, chem_GRDC,y1,y2, dgraphs, basin): #style incl
     plt.ylim( 0, np.max(T/1000)*1.1)
     
     ax1.set_xticks(X)
-    ax1.set_xticklabels(LabMonths, fontsize=6)
+    ax1.set_xticklabels(LabMonths, fontsize=4)
     ax1.tick_params(axis='y', which='major',pad=0.1,labelsize=6)    
     
     addcardgrdcnew(stname, chem_GRDC, basin)
@@ -829,13 +829,13 @@ def plotallstn_annualcycle(Lst, L, chem_GRDC, y1, y2, dgraphs, basin):
 
 
 ### Plot the time serie for a station and a list of data
-def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd="", chem_Restart = ""): #Style included
+def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd="", chem_Restart = "", style = style): #Style included
     """
     plot the time serie
     """
     debug = None
     print "####"
-    #print stname.replace("\xd6","o")
+    print stname.replace("\xd6","o")
     
     doc=open(dgraphs+basin+"stn.txt","a")
     doc.write("\n"+stname)
@@ -858,16 +858,16 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     if debug: print "Plot"
     # PLOT
     fig=plt.figure(figsize=(4.5,2.5),dpi=250)
-    ax1 = plt.subplot2grid((1, 6), (0, 0), colspan=4)   
+    ax1 = plt.subplot2grid((1, 10), (0, 0), colspan=7)   
     i=0
     #X=np.arange(0,len(out[i][1]))
     X=np.arange(0,(y2-y1+1)*12)
     
 
-    #### REF
+    #### Double axe and put it right of the figure
     ax4 = ax1.twinx()
     ax4.yaxis.tick_right()
-    
+    maxmin = []
     while i<len(out):
         print L[i][2]
         out0=monthmeantot(out[i][2],out[i][1],y1,y2) #data dtime y1 y2
@@ -876,37 +876,44 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
             ax1.plot(X, out0/1000, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=1,lw=style[i][3], markevery = 10)
         else:
             print "Mean value : ",round(ma.mean(out0),2),"mm/day"
-            print out0
             ax4.plot(X, out0, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=1,lw=style[i][3], markevery = 1)
+            maxmin.append(np.max(out0))
+            maxmin.append(np.min(out0))
+            colpr = style[i][2]
         i=i+1
     out00=[0]*len(X)
     ax1.plot(X, out00, color = "black" , ls="-", lw=0.2)
         
     # ytick    
-    ax1.set_ylabel('($10^3 m^3/s$)',fontsize=6,labelpad=3,rotation=90)
+    ax1.set_ylabel('($10^3 m^3/s$)',fontsize=4,labelpad=2.5,rotation=90)
     plt.setp(ax1.get_yticklabels(), fontsize=4)
-    ax4.set_ylabel('($mm/day$)',fontsize=6,labelpad=3,rotation=90)
-    plt.setp(ax4.get_yticklabels(), fontsize=4)
+    ax4.set_ylabel('($mm/day$)',fontsize=5,labelpad=-1,rotation=90)
+    plt.setp(ax4.get_yticklabels(), fontsize=5, color = colpr)
+
+    # Limite pour precipitation-et
+    size= np.max(maxmin)-np.min(maxmin) 
+    ax4.set_ylim(np.min(maxmin)-size, np.max(maxmin)+size)
+
     # xtick
     xtickstimeMonth(y1, y2 , ax1)
+
+
     # Map
     addcardgrdcnew(stname, chem_GRDC, basin)
     # Legend
-    #align_yaxis(ax1, 0, ax4, 0)
-    legend=ax1.legend(bbox_to_anchor=(1.3, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 2, edgecolor="none")
-    plt.setp(legend.get_title(),fontsize=8)
+    legend=ax4.legend(bbox_to_anchor=(1.1, 0.6, 0.2, 0.4),handles=LEG,fontsize=6,title=r'Legend',loc = 2, edgecolor="none")
+    plt.setp(legend.get_title(),fontsize=10)
 
     # Get details info about station
     det = getDetails(stname, L, chem_GRDC, chem_Restart)
-    print det
-    ax3 = plt.subplot2grid((3, 6), (1, 5),colspan=1)
+    ax3 = plt.subplot2grid((3, 10), (1, 8),colspan=2)
     ax3.xaxis.set_visible(False)
     ax3.yaxis.set_visible(False)
     ax3.set_frame_on(False)
     plt.text(0,0,"Lon,Lat: \\"+str(round(det[1],2))+", " + str(round(det[0],2))+"\n Up. Area: "+str(int(det[2]))+" km$^2$\n Altitude: "+str(int(det[3]))+" m\n Mean topoindex:\n"+str(int(det[4]))+" m", fontsize = 5)
 
     # Finalize    
-    fig.subplots_adjust(left=0.1, right=0.85,bottom=0.1, top=0.93,wspace= 0.04)
+    fig.subplots_adjust(left=0.08, right=0.98, bottom=0.1, top=0.93,wspace= 0.)
     fig.suptitle(r'Time series '+stname, fontsize=8,y=0.985)#loc="left"
     if "xd6" in stname:
         fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-timeserie.jpg",dpi=350)
@@ -917,14 +924,20 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
 
 
 
+
+
 ### Plot the time series graph for a list of stations
-def plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""):
+def plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd="", chem_Restart="", style = style):
     i=0
     while i<len(Lst):
         print "####"
         print i+1,"/",len(Lst)
-        plottimeserie(Lst[i], L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd)
+        plottimeserie(Lst[i], L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd,chem_Restart, style = style)
         i=i+1
+
+
+
+
 
 #####################
 ### Help Analysis ###
@@ -1011,7 +1024,7 @@ def AvailableStn(chem_GRDC_rd, chem_GRDC, basin, AR=False, BR=False):
 
 #### Plot all stn available basin ####
 # Time series
-def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""): #actualiser format
+def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd="", chem_Restart = "", style = style): #actualiser format
     print "###",basin,"###"
     doc=open(dgraphs+basin+"stn.txt","w")
     doc.write("### "+basin+" ###")
@@ -1024,7 +1037,7 @@ def plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid=
     while i<len(Lavst):
         Lst.append(Lavst[i][0])
         i=i+1
-    plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd)
+    plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, chem_grdc_rd, chem_Restart, style)
     return
 
 # Annual Cycle
