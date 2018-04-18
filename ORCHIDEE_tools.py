@@ -914,11 +914,11 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
 
     # Finalize    
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.1, top=0.93,wspace= 0.)
-    fig.suptitle(r'Time series '+stname, fontsize=8,y=0.985)#loc="left"
+    fig.suptitle(r'Time series '+stname.replace("\xd6","o"), fontsize=8,y=0.985)#loc="left"
     if "xd6" in stname:
         fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-timeserie.jpg",dpi=350)
     else:
-        fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-")+"-timeserie.jpg",dpi=350)
+        fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-timeserie.jpg",dpi=350)
     plt.close()
     return 
 
