@@ -427,7 +427,7 @@ def get_lonlat_stn_model(chem_GRDC, chem_GRDCnew, stname):
 ### Data Treatment###
 #####################
 ### Get variable integrated in subbasin of a station - convert from mm/d to m^3/s - FOR PRECIPITATION AND EVAP
-def get_varmask_stn(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, variable,conv_rain): #ADD GRDC FILE !!!!! 
+def get_varmask_stn(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, variable, conv_rain): #ADD GRDC FILE !!!!! 
     Debug = False
     if Debug: print "start"
     # Get index
@@ -674,7 +674,7 @@ def extract_annualcycle(stname, L, chem_GRDC, y1, y2):
 ############
 ### Add map of GRDC station
 # reprendre avec retrouver dans modèle location exact cf tools !!!!!! - GRDCnew 
-def addcardgrdcnew(stname, chem_GRDC, basin):
+def addcardgrdcnew(stname, chem_GRDC, basin, chem_grdc_rd="", doublebar=True):
     """
     Add the map with the indication of the station next to the graphic.
     k: int, index of the station
@@ -687,7 +687,11 @@ def addcardgrdcnew(stname, chem_GRDC, basin):
     lat = importvariable(chem_GRDC, "lat", 1)[i]
     ibas = np.where(Basins == basin)[0][0]
     Lbas= Basins[ibas]
-    ax2 = plt.subplot2grid((3, 10), (2, 8),colspan=2)
+    if doublebar:
+        ax2 = plt.subplot2grid((3, 10), (2, 8),colspan=2)
+    else:
+        ax2 = plt.subplot2grid((3, 10), (2, 7),colspan=3)
+        
     m = Basemap(projection="cyl", llcrnrlon=float(Lbas[1]), llcrnrlat=float(Lbas[2]),         \
                     urcrnrlon=float(Lbas[3]), urcrnrlat= float(Lbas[4]), resolution="i")
     m.arcgisimage(server='http://server.arcgisonline.com/ArcGIS', service = 'World_Physical_Map',epsg=3000,xpixels=300, dpi=300,verbose=True)
@@ -696,6 +700,19 @@ def addcardgrdcnew(stname, chem_GRDC, basin):
     m.drawrivers(linewidth=0.15,color="b")
     
     ax2.plot([lon],[lat],'o',markersize=2,color='r')
+    if chem_grdc_rd != "":
+        namegr = importGRDCname(chem_GRDC)
+        index = stgrdcindex(stname,namegr)
+        mask = getstn_grdc_rd(chem_grdc_rd, index)
+        
+        lons = importvariable(chem_grdc_rd, "lon", 1)
+        lats = importvariable(chem_grdc_rd, "lat", 1)
+        lon, lat = np.meshgrid(lons, lats)
+        xi, yi = m(lon, lat)
+        # Voir si fonctionne ou si grille trop grande ne se grafique pas 
+        
+        m.contourf(xi ,yi ,mask,cmap=plt.get_cmap("Blues"))
+        ax2.plot()
     return 
 ### Plot xticks timeseries
 def xtickstimeMonth(y1, y2, ax):
