@@ -1,12 +1,13 @@
 #!/usr/bin/env python2
 # -*- coding: iso-8859-15 -*-
-# Tools for Python / ORCHIDEE
-# From Anthony Schrapffer
+"""
+Tools for Python / ORCHIDEE
+From Anthony Schrapffer
 # Working at CIMA (Argentina)
 #
 # This work is licendes under a Creative Commons 
 #   Attribution-ShareAlike 4.0 International License (http://creativecommons.org/licenses/by-sa/4.0)
-#
+"""
 # To import : 
 # import sys
 # sys.path.append("/home/anthony/TotiTools") # To change
