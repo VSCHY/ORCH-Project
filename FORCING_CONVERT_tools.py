@@ -109,7 +109,7 @@ def savedata(newdata, beg, Len, indir, outdir, datan, dimx, dimy):
     print "done"
     print "put data done"
 
-def conversionlonlat(indir, outdir, datan, L):
+def conversionlonlat(indir, outdir, datan, Lo):
     if os.path.isfile(outdir):
         print ERROR
         print "Output file already exists"
@@ -119,11 +119,11 @@ def conversionlonlat(indir, outdir, datan, L):
     print "***"
     print "Get dimension"
     dimx, dimy, dimt = get_DIM(indir)
+    L=int(Lo)
     
     print "Set data environment"
     newdata, foo = set_ORCHForcEnv(indir, outdir, datan, dimx, dimy, dimt)
-    
-    N = int(dimt/L)
+    N = int(dimt/float(L))
     R = dimt-N*L+1
     
     print "Start data conversion"
