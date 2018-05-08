@@ -9,6 +9,7 @@ Created on Wed May  2 12:47:43 2018
 """
 
 # Libraries 
+import os
 import numpy as np
 import numpy.ma as ma
 from netCDF4 import Dataset as NetCDFFile
@@ -17,6 +18,7 @@ from netCDF4 import num2date
 import matplotlib.pyplot as plt
 from matplotlib import rc
 from mpl_toolkits.basemap import Basemap
+from optparse import OptionParser
 import time
 
 
@@ -24,6 +26,8 @@ import sys
 #sys.path.append("/home/anthony/TotiTools/ORCH-Project/")
 sys.path.append("./")
 import GLO_tools as GLO
+
+ERROR = "*** --- *** ERROR *** --- ***"
 
 ######################
 ######## MAIN ########
@@ -94,6 +98,7 @@ def convertlonlat_timstep(indir, datan, timestep, dimx, dimy, landref):
 def savedata(newdata, beg, Len, indir, outdir, datan, dimx, dimy):
     """
     """
+    
     print beg, beg+Len
     landref = GLO.get_var(indir, "land", 0)
     for t in range(0,Len):
@@ -105,6 +110,10 @@ def savedata(newdata, beg, Len, indir, outdir, datan, dimx, dimy):
     print "put data done"
 
 def conversionlonlat(indir, outdir, datan, L):
+    if os.path.isfile(outdir):
+        print ERROR
+        print "Output file already exists"
+        return 
     convstart = time.time()
     print "Start CONVERSION at ", convstart 
     print "***"
@@ -128,12 +137,25 @@ def conversionlonlat(indir, outdir, datan, L):
     foo.close()
     print "Finished at ",time.time()-convstart
 
+######################
+####Option Parser ####
+######################
+operations = ["conversionlonlat"]
+
+parser = OptionParser()
+parser.add_option("-o", "--operation", type='choice', dest="operation", choices=operations, help="operation to make", metavar="OPER")
+parser.add_option("-i", "--in", dest="indir", help="Input file")
+parser.add_option("-w", "--out", dest="outdir", help="Output file")
+parser.add_option("-v", "--var", dest="varname", help="Name of the variable")
+parser.add_option("-l", "--len", dest="lengthloop", help="Length of the loop")
+
+(opts, args) = parser.parse_args()
+
+oper=opts.operation
+
+if oper == 'conversionlonlat':
+    conversionlonlat(opts.indir, opts.outdir, opts.varname, opts.lengthloop)
+
 ### Test ###
-
-indir = "/home/anthony/Documents/Doctorat/ORCHIDEE/8-Comparison_Resolutions/8.5-E2OFD-conversion2plot/E2OFD_Rainf_Daily_1979_1979_good.nc"
-outdir = "/home/anthony/Documents/Doctorat/ORCHIDEE/foo.nc"
-datan="Rainf"
-L = 1    
-conversionlonlat(indir, outdir, datan, L)
-
+# python $DIRFORC -o conversionlonlat -i $indir -w $outdir -v $varn -l 500
 
