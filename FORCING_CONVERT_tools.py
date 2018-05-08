@@ -21,7 +21,6 @@ from mpl_toolkits.basemap import Basemap
 from optparse import OptionParser
 import time
 
-
 import sys
 #sys.path.append("/home/anthony/TotiTools/ORCH-Project/")
 sys.path.append("./")
@@ -115,7 +114,7 @@ def conversionlonlat(indir, outdir, datan, Lo):
         print "Output file already exists"
         return 
     convstart = time.time()
-    print "Start CONVERSION at ", convstart 
+    print "Start CONVERSION at ", time.ctime() 
     print "***"
     print "Get dimension"
     dimx, dimy, dimt = get_DIM(indir)
@@ -132,7 +131,7 @@ def conversionlonlat(indir, outdir, datan, Lo):
         print "Range : ",i,"/",N
         print "####"
         savedata(newdata, i*L, L, indir, outdir, datan, dimx, dimy)
-    savedata(N*L, R, indir, outdir, datan, dimx, dimy)
+    savedata(newdata, N*L, R, indir, outdir, datan, dimx, dimy)
     foo.sync()
     foo.close()
     print "Finished at ",time.time()-convstart
