@@ -168,7 +168,8 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     OBS = np.zeros((12,len(L)))
     i=0
     while i<len(L):
-        if L[i][5]:
+        print L[i]
+        if L[i][5] is True:
             OBS[:,i] = getdata_plotstn_obs_annualcycle(stname, L[i][0], chem_grdc_rd, chem_grdc, chem_grid, L[i][2], L[i][3], y1, y2)
         else:
             OBS[:,i] = getdata_plotstn_obs_annualcycle(stname, L[i][0], L[i][5], chem_grdc, L[i][6], L[i][2], L[i][3], y1, y2)
@@ -242,7 +243,7 @@ def plotallstn_obs_annualcycle(Lst, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     i=0
     while i<len(Lst):
         print "####"
-        print i+1,"/",len(Lst)
+        print i+1,"/",len(Lst), " :",Lst[i]
         plotstn_obs_annualcycle(Lst[i], L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs, y1, y2, style, basin)
         i=i+1
     print "Finished"
