@@ -52,7 +52,7 @@ Lstold=["Fecho Dos Morros","La Punilla","Andira","Barbosa Ferraz","Zanja Del Tig
 # List of correspondant Longitud in the model grid
 LonMod=[-57.75,-66.25,-50.25,-52.25,-64.25,-53.25,-51.25,-47.75,-50.75,-63.75,-51.75,
         -65.25,-56.75,-57.75,-52.75,-64.75,-58.25,-57.75,-54.25,-52.75,-50.25,-62.75,
-        -64.75,-50.25,-65.75,-58.75,-56.25,-52.75,-64.75,-50.75,-57.25,-50.75,-52.25,
+        -64.75,-50.25,-65.75,-59.25,-56.25,-52.75,-64.75,-50.75,-57.25,-50.75,-52.25,
         -54.75,-60.75]
 
 # List of correspondant Latitud in the model grid
@@ -586,6 +586,7 @@ def extract_timeseries(stname, L, chem_GRDC, y1, y2, chem_grid="", chem_grdc_rd=
         return H
     else:
         return None
+
 ### Extract annual cycle from a list of data
 def extract_annualcycle(stname, L, chem_GRDC, y1, y2):
     """
@@ -883,9 +884,13 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     
 
     #### Double axe and put it right of the figure
-    ax4 = ax1.twinx()
-    ax4.yaxis.tick_right()
-    maxmin = []
+    if "rain" in L:
+        print "Doublebar"
+        ax4 = ax1.twinx()
+        ax4.yaxis.tick_right()
+        maxmin = []
+    altbar = False
+
     while i<len(out):
         print L[i][2]
         out0=monthmeantot(out[i][2],out[i][1],y1,y2) #data dtime y1 y2
@@ -894,10 +899,11 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
             ax1.plot(X, out0/1000, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=1,lw=style[i][3], markevery = 10)
         else:
             print "Mean value : ",round(ma.mean(out0),2),"mm/day"
-            ax4.plot(X, out0, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=1,lw=style[i][3], markevery = 1)
+            ax4.plot(X, out0, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=1,lw=style[i][3], markevery = 1) 
             maxmin.append(np.max(out0))
             maxmin.append(np.min(out0))
             colpr = style[i][2]
+            altbar = True
         i=i+1
     out00=[0]*len(X)
     ax1.plot(X, out00, color = "black" , ls="-", lw=0.2)
@@ -905,22 +911,30 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     # ytick    
     ax1.set_ylabel('($10^3 m^3/s$)',fontsize=4,labelpad=2.5,rotation=90)
     plt.setp(ax1.get_yticklabels(), fontsize=4)
-    ax4.set_ylabel('($mm/day$)',fontsize=5,labelpad=-1,rotation=90)
-    plt.setp(ax4.get_yticklabels(), fontsize=5, color = colpr)
+    
+    if altbar:
+        ax4.set_ylabel('($mm/day$)',fontsize=5,labelpad=-1,rotation=90)
+        plt.setp(ax4.get_yticklabels(), fontsize=5)#, color = colpr)
 
-    # Limite pour precipitation-et
-    size= np.max(maxmin)-np.min(maxmin) 
-    ax4.set_ylim(np.min(maxmin)-size, np.max(maxmin)+size)
+        # Limite pour precipitation-et
+        size= np.max(maxmin)-np.min(maxmin) 
+        ax4.set_ylim(np.min(maxmin)-size, np.max(maxmin)+size)
 
     # xtick
     xtickstimeMonth(y1, y2 , ax1)
 
 
     # Map
-    addcardgrdcnew(stname, chem_GRDC, basin)
+    if altbar:
+        addcardgrdcnew(stname, chem_GRDC, basin, chem_grdc_rd)
+        legend=ax1.legend(bbox_to_anchor=(1.1, 0.6, 0.2, 0.4),handles=LEG,fontsize=5,title=r'Legend',loc = 2, edgecolor="none")
+    else:
+        addcardgrdcnew(stname, chem_GRDC, basin, chem_grdc_rd, False)
+        legend=ax1.legend(bbox_to_anchor=(1.03, 0.6, 0.2, 0.4),handles=LEG,fontsize=5,title=r'Legend',loc = 2, edgecolor="none")
     # Legend
-    legend=ax4.legend(bbox_to_anchor=(1.1, 0.6, 0.2, 0.4),handles=LEG,fontsize=6,title=r'Legend',loc = 2, edgecolor="none")
+
     plt.setp(legend.get_title(),fontsize=10)
+
 
     # Get details info about station
     det = getDetails(stname, L, chem_GRDC, chem_Restart)
@@ -928,11 +942,13 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     ax3.xaxis.set_visible(False)
     ax3.yaxis.set_visible(False)
     ax3.set_frame_on(False)
-    plt.text(0,0,"Lon,Lat: \\"+str(round(det[1],2))+", " + str(round(det[0],2))+"\n Up. Area: "+str(int(det[2]))+" km$^2$\n Altitude: "+str(int(det[3]))+" m\n Mean topoindex:\n"+str(int(det[4]))+" m", fontsize = 5)
+    xadj = -0.2
+    if altbar: xadj = 0
+    plt.text(xadj,0,"Lon,Lat: \\"+str(round(det[1],2))+", " + str(round(det[0],2))+"\n Up. Area: "+str(int(det[2]))+" km$^2$ "+"\nAltitude: "+str(int(det[3])), fontsize = 5)
 
     # Finalize    
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.1, top=0.93,wspace= 0.)
-    fig.suptitle(r'Time series '+stname.replace("\xd6","o"), fontsize=8,y=0.985)#loc="left"
+    fig.suptitle(r'Time series '+stname.replace("\xd6","o"), fontsize=8,y=0.985, x = 0.1, ha = "left")#loc="left"
     if "xd6" in stname:
         fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-timeserie.jpg",dpi=350)
     else:
@@ -1105,11 +1121,11 @@ def getDetails(stn, L, chem_GRDC, chem_Restart):
     Lat_Stn_GRDC = importvariable(chem_GRDCnew, "Lat_Stn_GRDC",1)[i]
     Lon_Stn_GRDC = importvariable(chem_GRDCnew, "Lon_Stn_GRDC",1)[i]
     
-    alpha = importvariable(chem_GRDCnew, "Ox_Stn_Model",1)[i]
-    beta = importvariable(chem_GRDCnew, "Ox_Stn_Model",1)[i]
+    #alpha = importvariable(chem_GRDCnew, "Ox_Stn_Model",1)[i]
+    #beta = importvariable(chem_GRDCnew, "Ox_Stn_Model",1)[i]
 
-    Lon_Stn_Model = importvariable(chem_Restart, "nav_lon",2)[0,int(alpha)]
-    Lat_Stn_Model = importvariable(chem_Restart, "nav_lat",2)[int(beta),0]
+    #Lon_Stn_Model = importvariable(chem_Restart, "nav_lon",2)[0,int(alpha)]
+    #Lat_Stn_Model = importvariable(chem_Restart, "nav_lat",2)[int(beta),0]
     
     # From GRDC
     j = stgrdcindex(stn, namegr)-1 # because here python index, start 0
@@ -1117,9 +1133,9 @@ def getDetails(stn, L, chem_GRDC, chem_Restart):
     altitude =  importvariable(chem_GRDC, "altitude",1)[j]
 
     # From restart - extraire fichier necessaire
-    topo = gettopo(chem_Restart,Lon_Stn_Model, Lat_Stn_Model)
+    #topo = gettopo(chem_Restart,Lon_Stn_Model, Lat_Stn_Model)
     # Rearange Details
-    details = [Lat_Stn_GRDC,Lon_Stn_GRDC, area, altitude, topo]
+    details = [Lat_Stn_GRDC,Lon_Stn_GRDC, area, altitude]
     return details
 
 
