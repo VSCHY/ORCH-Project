@@ -114,7 +114,7 @@ def annualcycle(M, dtime, y1, y2):
         M0[dtimenew[i].month-1,dtimenew[i].year-y1]=varnew[i]
         i=i+1
     # Calculate Annual cycle
-    print np.shape(M0)
+    #print np.shape(M0)
     M1=ma.mean(M0,1) # 1 ou zero??
     return M1
 
@@ -168,7 +168,7 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     OBS = np.zeros((12,len(L)))
     i=0
     while i<len(L):
-        print L[i]
+        print L[i][1]
         if L[i][5] is True:
             OBS[:,i] = getdata_plotstn_obs_annualcycle(stname, L[i][0], chem_grdc_rd, chem_grdc, chem_grid, L[i][2], L[i][3], y1, y2)
         else:
@@ -205,7 +205,8 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     ax1.set_xticks(X)
     ax1.set_xticklabels(LabMonths, fontsize=4)
     ax1.tick_params(axis='y', which='major',pad=0.1,labelsize=6)    
-
+    
+    print "Plot map"
     OR.addcardgrdcnew(stname, chem_grdc, basin, chem_grdc_rd, False)
     
     ax1.legend(bbox_to_anchor=(1.05, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 2, edgecolor="none")

@@ -405,10 +405,9 @@ def getstn_grdc_rd(chem_grdc_rd, index):
     """
     salid = NetCDFFile(chem_grdc_rd, 'r')
     for m in salid.variables.keys():
-        if salid.variables.standard_name!="longitude" and salid.variables.standard_name!="latitude":
-            if salid.variables[m].Index_of_GRDC_Station==index:
-                a=salid.variables[m][:,:] # (lat, lon)
-                return a
+        if salid.variables[m].Index_of_GRDC_Station==index:
+            a=salid.variables[m][:,:] # (lat, lon)
+            return a
     return None
 ### Get the location of a station in the model ###
 def get_lonlat_stn_model(chem_GRDC, chem_GRDCnew, stname):
