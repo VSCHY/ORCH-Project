@@ -168,7 +168,7 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     OBS = np.zeros((12,len(L)))
     i=0
     while i<len(L):
-        if L[i][4]:
+        if L[i][5]:
             OBS[:,i] = getdata_plotstn_obs_annualcycle(stname, L[i][0], chem_grdc_rd, chem_grdc, chem_grid, L[i][2], L[i][3], y1, y2)
         else:
             OBS[:,i] = getdata_plotstn_obs_annualcycle(stname, L[i][0], L[i][5], chem_grdc, L[i][6], L[i][2], L[i][3], y1, y2)
