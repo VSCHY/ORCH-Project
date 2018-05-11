@@ -181,6 +181,7 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     LabMonths=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan"]
     
     ### Plot ###
+    print "Start plotting"
     fig=plt.figure(figsize=(4.5,2.5),dpi=250)
     ax1 = plt.subplot2grid((1, 10), (0, 0), colspan=7)  
     
@@ -197,6 +198,7 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
         ax1.plot(X, OBS[:,i]/L[i][4], color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=2,lw=0.5) 
         # voir si /31 - mm/month - mm/day
         i=i+1
+
     print ma.max(OBS[:,0])
     plt.ylim( 0, np.max(OBS/31)*1.1)
     ax1.set_ylabel('($mm/day$)',fontsize=6,labelpad=3,rotation=90)
