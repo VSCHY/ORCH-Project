@@ -193,7 +193,7 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     # Plot data
     i=0
     while i<len(L):
-        print OBS[:,i]
+        print OBS[:,i]/float(L[i][4])
         print L[i][4]
         ax1.plot(X, OBS[:,i]/float(L[i][4]), color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=2,lw=0.5) 
         # voir si /31 - mm/month - mm/day
@@ -217,7 +217,7 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.1, top=0.93,wspace= 0.)
     
     fig.suptitle(r'Annual cycle '+stname.replace("\xd6","o") +" "+str(y1)+"-"+str(y2), fontsize=8,y=0.985)#loc="left"
-    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-annualcycle_OBS-"+str(y1)+str(y2)+".jpg",dpi=350)
+    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-annualcycle_OBS-"+str(y1)+str(y2)+".png",dpi=350)
     plt.close()
     return OBS
 
