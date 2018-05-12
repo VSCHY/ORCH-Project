@@ -21,16 +21,16 @@ from datetime import date
 from netCDF4 import Dataset as NetCDFFile
 from netCDF4 import num2date
 import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import rc
 import matplotlib.patches as mpatches
 import numpy.ma as ma
 import matplotlib.lines as mlines
-#mpl.use('Agg')
 from mpl_toolkits.basemap import Basemap
 from matplotlib.ticker import AutoMinorLocator
 import matplotlib.ticker as ticker
-rc('text', usetex=True)
+#rc('text', usetex=True)
 import matplotlib.dates as mdates
 import matplotlib.cbook as cbook
 

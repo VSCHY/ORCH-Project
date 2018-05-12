@@ -11,30 +11,29 @@ import sys
 import os
 sys.path.append(os.getcwd())
 import ORCHIDEE_tools as OR
-
 import sys 
 import numpy as np
 from datetime import date
 from netCDF4 import Dataset as NetCDFFile
 from netCDF4 import num2date
 import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import rc
 import matplotlib.patches as mpatches
 import numpy.ma as ma
 import matplotlib.lines as mlines
-mpl.use('Agg')
 from mpl_toolkits.basemap import Basemap
 from matplotlib.ticker import AutoMinorLocator
 import matplotlib.ticker as ticker
-rc('text', usetex=True)
+#rc('text', usetex=True)
 import matplotlib.dates as mdates
 import matplotlib.cbook as cbook
 
 
 
 # Get data for upstream area of station
-def varmask_stn_monthobs(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, variablename, timename, y1, y2): #ADD GRDC FILE !!!!! 
+def varmask_stn_monthobs(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, variablename, timename, y1, y2): 
     """
     Get the variable mean on the upstream area of the station.
     
@@ -71,8 +70,8 @@ def varmask_stn_monthobs(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, 
         if i==(len(M)*3/4): print "75%"
         vari=OR.importTIMEvalue(chem_file, variablename, i)
         # mm/d = kg/m^2/d = m^3/1000/m^2/d = m/1000/s/86400 | * upstream en m^2
-        stot = ma.sum(mask[:,:]*gridarea) 
-        M[i] = ma.sum(vari[:,:]*mask[:,:]*gridarea)/stot
+        stot = ma.sum(mask[:,:]*gridarea[:,:]) 
+        M[i] = ma.sum(vari[:,:]*mask[:,:]*gridarea[:,:])/stot
         i=i+1
     return M, dtime
 
@@ -195,23 +194,25 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     i=0
     while i<len(L):
         print OBS[:,i]
-        ax1.plot(X, OBS[:,i]/L[i][4], color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=2,lw=0.5) 
+        print L[i][4]
+        ax1.plot(X, OBS[:,i]/float(L[i][4]), color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=2,lw=0.5) 
         # voir si /31 - mm/month - mm/day
         i=i+1
 
-    print ma.max(OBS[:,0])
-    plt.ylim( 0, np.max(OBS/31)*1.1)
+    print ma.max(OBS[:,:])
+    plt.ylim( 0, np.max(OBS[:,:]/31)*1.2)
     ax1.set_ylabel('($mm/day$)',fontsize=6,labelpad=3,rotation=90)
     plt.setp(ax1.get_yticklabels(), fontsize=4)
 
     ax1.set_xticks(X)
-    ax1.set_xticklabels(LabMonths, fontsize=4)
+    ax1.set_xticklabels(LabMonths, fontsize=6, rotation=-45)
     ax1.tick_params(axis='y', which='major',pad=0.1,labelsize=6)    
     
     print "Plot map"
     OR.addcardgrdcnew(stname, chem_grdc, basin, chem_grdc_rd, False)
     
-    ax1.legend(bbox_to_anchor=(1.05, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 2, edgecolor="none")
+    lg = ax1.legend(bbox_to_anchor=(1.05, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 2)
+    lg.get_title().set_fontsize(5)
     # Finalize    
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.1, top=0.93,wspace= 0.)
     
