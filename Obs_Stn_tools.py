@@ -192,15 +192,16 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
         i=i+1
     # Plot data
     i=0
+    a=0
     while i<len(L):
         print OBS[:,i]/float(L[i][4])
-        print L[i][4]
+        if ma.max(OBS[:,i]/float(L[i][4]))>a: a = ma.max(OBS[:,i]/float(L[i][4]))
         ax1.plot(X, OBS[:,i]/float(L[i][4]), color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=2,lw=0.5) 
         # voir si /31 - mm/month - mm/day
         i=i+1
 
-    print ma.max(OBS[:,:])
-    plt.ylim( 0, np.max(OBS[:,:]/31)*1.2)
+    print a
+    plt.ylim( 0, a*1.2)
     ax1.set_ylabel('($mm/day$)',fontsize=6,labelpad=3,rotation=90)
     plt.setp(ax1.get_yticklabels(), fontsize=4)
 
