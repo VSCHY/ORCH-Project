@@ -194,20 +194,20 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     i=0
     a=0
     while i<len(L):
-        print OBS[:,i]/float(L[i][4])
-        if ma.max(OBS[:,i]/float(L[i][4]))>a: a = ma.max(OBS[:,i]/float(L[i][4]))
-        ax1.plot(X, OBS[:,i]/float(L[i][4]), color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=2,lw=0.5) 
+        print OBS[:,i]/L[i][4]
+        if ma.max(OBS[:,i]/L[i][4])>a: a = ma.max(OBS[:,i]/L[i][4])
+        ax1.plot(X, OBS[:,i]/L[i][4], color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=2,lw=0.5) 
         # voir si /31 - mm/month - mm/day
         i=i+1
 
     print a
     plt.ylim( 0, a*1.2)
-    ax1.set_ylabel('($mm/day$)',fontsize=6,labelpad=3,rotation=90)
+    ax1.set_ylabel('($mm/day$)',fontsize=9,labelpad=3,rotation=90)
     plt.setp(ax1.get_yticklabels(), fontsize=4)
 
     ax1.set_xticks(X)
     ax1.set_xticklabels(LabMonths, fontsize=6, rotation=-45)
-    ax1.tick_params(axis='y', which='major',pad=0.1,labelsize=6)    
+    ax1.tick_params(axis='y', which='major',pad=1.0,labelsize=6)    
     
     print "Plot map"
     OR.addcardgrdcnew(stname, chem_grdc, basin, chem_grdc_rd, False)
@@ -217,7 +217,7 @@ def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgrap
     # Finalize    
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.1, top=0.93,wspace= 0.)
     
-    fig.suptitle(r'Annual cycle '+stname.replace("\xd6","o") +" "+str(y1)+"-"+str(y2), fontsize=8,y=0.985)#loc="left"
+    fig.suptitle(r'Annual cycle '+stname.replace("\xd6","o") +" "+str(y1)+"-"+str(y2), fontsize=8,y=0.985, ha="left", x=0.1)
     fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-annualcycle_OBS-"+str(y1)+str(y2)+".png",dpi=350)
     plt.close()
     return OBS
