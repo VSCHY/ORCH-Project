@@ -157,9 +157,7 @@ def getdata_plotstn_obs_timeserie(stname, chem_file, chem_grdc_rd, chem_grdc, ch
     """
     namegr=OR.importGRDCname(chem_grdc)
     M, dtime = varmask_stn_monthobs(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, variablename, timename, y1, y2)
-    print "M", np.shape(M)
     varnew, dtimenew = timcut(M, dtime, y1, y2)
-    print "varnew", np.shape(varnew)
     return varnew
 
 
@@ -344,7 +342,6 @@ def plotstn_obs_timeserie(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs
     # Extract the data
 
     OBS = np.zeros(((y2-y1+1)*12,len(L)))
-    print np.shape(OBS)
     i=0
     while i<len(L):
         print L[i][1]
@@ -354,7 +351,7 @@ def plotstn_obs_timeserie(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs
             OBS[:,i] = getdata_plotstn_obs_timeserie(stname, L[i][0], L[i][5], chem_grdc, L[i][6], L[i][2], L[i][3], y1, y2)
         # relation entre i et variablename et timename
         i=i+1
-    
+
     ### Plot ###
     print "Start plotting"
     fig=plt.figure(figsize=(4.5,2.5),dpi=250)
@@ -367,12 +364,20 @@ def plotstn_obs_timeserie(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs
         LEG.append(mlines.Line2D([], [], color=style[i][2], marker=style[i][1],label=L[i][1],ls=style[i][0],ms=4))
         i=i+1
     # Plot data
+    X=np.arange(0,(y2-y1+1)*12)
     i=0
     a=0
     while i<len(L):
-        print OBS[:,i]/float(L[i][4])
-        if ma.max(OBS[:,i]/float(L[i][4]))>a: a = ma.max(OBS[:,i]/float(L[i][4]))
-        ax1.plot(X, OBS[:,i]/float(L[i][4]), color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=2,lw=0.5) 
+        print i 
+        y=y1
+        k = L[i][4]
+        K=k
+        while y<y2:
+            K=np.append(K,k)
+            y=y+1
+
+        if ma.max(OBS[:,i]/K)>a: a = ma.max(OBS[:,i]/K)
+        ax1.plot(X, OBS[:,i]/K, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=2,lw=0.5) 
         # voir si /31 - mm/month - mm/day
         i=i+1
 
@@ -382,7 +387,7 @@ def plotstn_obs_timeserie(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs
     plt.setp(ax1.get_yticklabels(), fontsize=4)
 
     # xtick
-    xtickstimeMonth(y1, y2 , ax1)   
+    OR.xtickstimeMonth(y1, y2 , ax1)   
     
     print "Plot map"
     OR.addcardgrdcnew(stname, chem_grdc, basin, chem_grdc_rd, False)
