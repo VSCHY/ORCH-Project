@@ -140,6 +140,26 @@ def getdata_plotstn_obs_annualcycle(stname, chem_file, chem_grdc_rd, chem_grdc, 
     return M1
 
 
+# Get the data from obs & get time serie for station
+def getdata_plotstn_obs_timeserie(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, variablename, timename, y1, y2):
+    """
+    Get & convert the data from obs to annual cycle from station upstream area.
+    
+    stname: str, name of the station.
+    chem_file : str, direction of the data file.
+    chem_grdc_rd : str, direction of GRDC_river_desc corresponding file.
+    chem_grdc : str, direction of the GRDC file.
+    chem_grid : str, direction of the cell area file corresponding with chem_file & grdc_rd.
+    namegr : list, list of station name in the GRDC file.
+    variablename : str, name of the studied variable in the file.
+    timename : str, name of the time variable in the file
+    y1, y2 : int, year of beginning and end (included)
+    """
+    namegr=OR.importGRDCname(chem_grdc)
+    M, dtime = varmask_stn_monthobs(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, variablename, timename, y1, y2)
+    varnew, dtimenew = timcut(M, dtime, y1, y2)
+    return varnew
+
 
 # Plot the obs annual cycle for station area
 def plotstn_obs_annualcycle(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs, y1, y2, style, basin):
@@ -320,7 +340,7 @@ def plotstn_obs_timeserie(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs
     s1 = ["-" (line style) ,"" (marker),"k"(color),0.6 (line size)]
     """
     # Extract the data
-    OBS = np.zeros(((y2-y1+1)*12,len(L)))
+    OBS = np.zeros((y2-y1+1)*12,len(L)))
     i=0
     while i<len(L):
         print L[i][1]
