@@ -86,7 +86,7 @@ def timcut(var, dtime, y1, y2):
     y1, y2 : int, year of beginning and end (included)
     """
     ibeg = OR.finddatemonth(dtime,1,y1)
-    iend = OR.finddatemonth(dtime,1,y2)
+    iend = OR.finddatemonth(dtime,12,y2)
     varnew = var[ibeg:iend+1] # if (time lat lon - to check)
     dtimenew = dtime[ibeg:iend+1]
     return varnew, dtimenew
