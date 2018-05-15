@@ -157,7 +157,9 @@ def getdata_plotstn_obs_timeserie(stname, chem_file, chem_grdc_rd, chem_grdc, ch
     """
     namegr=OR.importGRDCname(chem_grdc)
     M, dtime = varmask_stn_monthobs(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, variablename, timename, y1, y2)
+    print "M", np.shape(M)
     varnew, dtimenew = timcut(M, dtime, y1, y2)
+    print "varnew", np.shape(varnew)
     return varnew
 
 
