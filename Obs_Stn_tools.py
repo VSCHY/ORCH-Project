@@ -297,6 +297,151 @@ def plotallbasin_obs_annualcycle(L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs,
 
 
 
+# Plot the obs timeserie for station area
+def plotstn_obs_timeserie(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs, y1, y2, style, basin):
+    """
+    Plot the annual cycle.
+    
+    stname: str, name of the station.
+    L : array, array of details on the data file.
+    chem_grdc_rd : str, direction of GRDC_river_desc corresponding file.
+    chem_grdc : str, direction of the GRDC file.
+    chem_grid : str, direction of the cell area file corresponding with chem_file & grdc_rd.
+    dgraphs : str, direction where to save the result
+    y1, y2 : int, year of beginning and end (included).
+    style : array, style array for visual details.
+    basin : str, name of the basin.
+    
+    L=[La, Lb]
+    La = [chem_file (dir. file), "GPCC" (name), "precip" (name variable), "time" (name time), 
+              k(coeff miltiplicatif - unite), True (True ou direction grdc rd si diff), chem_grid (autre)]
+    
+    style = [s1,s2...]
+    s1 = ["-" (line style) ,"" (marker),"k"(color),0.6 (line size)]
+    """
+    # Extract the data
+    OBS = np.zeros((y2-y1+1)*12,len(L)))
+    i=0
+    while i<len(L):
+        print L[i][1]
+        if L[i][5] is True:
+            OBS[:,i] = getdata_plotstn_obs_timeserie(stname, L[i][0], chem_grdc_rd, chem_grdc, chem_grid, L[i][2], L[i][3], y1, y2)
+        else:
+            OBS[:,i] = getdata_plotstn_obs_timeserie(stname, L[i][0], L[i][5], chem_grdc, L[i][6], L[i][2], L[i][3], y1, y2)
+        # relation entre i et variablename et timename
+        i=i+1
+    
+    ### Plot ###
+    print "Start plotting"
+    fig=plt.figure(figsize=(4.5,2.5),dpi=250)
+    ax1 = plt.subplot2grid((1, 10), (0, 0), colspan=7)  
+    
+    # Create Legend
+    LEG=[]
+    i=0
+    while i<len(L):
+        LEG.append(mlines.Line2D([], [], color=style[i][2], marker=style[i][1],label=L[i][1],ls=style[i][0],ms=4))
+        i=i+1
+    # Plot data
+    i=0
+    a=0
+    while i<len(L):
+        print OBS[:,i]/float(L[i][4])
+        if ma.max(OBS[:,i]/float(L[i][4]))>a: a = ma.max(OBS[:,i]/float(L[i][4]))
+        ax1.plot(X, OBS[:,i]/float(L[i][4]), color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=2,lw=0.5) 
+        # voir si /31 - mm/month - mm/day
+        i=i+1
+
+    print a
+    plt.ylim( 0, a*1.2)
+    ax1.set_ylabel('($mm/day$)',fontsize=6,labelpad=3,rotation=90)
+    plt.setp(ax1.get_yticklabels(), fontsize=4)
+
+    # xtick
+    xtickstimeMonth(y1, y2 , ax1)   
+    
+    print "Plot map"
+    OR.addcardgrdcnew(stname, chem_grdc, basin, chem_grdc_rd, False)
+    
+    lg = ax1.legend(bbox_to_anchor=(1.05, 0.6, 0.2, 0.4),handles=LEG,fontsize=4,title=r'Legend',loc = 2)
+    lg.get_title().set_fontsize(5)
+    # Finalize    
+    fig.subplots_adjust(left=0.08, right=0.98, bottom=0.1, top=0.93,wspace= 0.)
+    
+    fig.suptitle(r'Time Serie '+stname.replace("\xd6","o") +" "+str(y1)+"-"+str(y2), fontsize=8,y=0.985)#loc="left"
+    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-timeserie_OBS-"+str(y1)+str(y2)+".png",dpi=350)
+    plt.close()
+    return 
+
+
+### Plot annual cycle for observation for list of stations ###
+def plotallstn_obs_timeserie(Lst, L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs, y1, y2, style, basin):
+    """
+    Plot the annual cycle for a list of stations.
+    
+    Lst: list, list of stations' names.
+    L : array, array of details on the data file.
+    chem_grdc_rd : str, direction of GRDC_river_desc corresponding file.
+    chem_grdc : str, direction of the GRDC file.
+    chem_grid : str, direction of the cell area file corresponding with chem_file & grdc_rd.
+    dgraphs : str, direction where to save the result
+    y1, y2 : int, year of beginning and end (included).
+    style : array, style array for visual details.
+    basin : str, name of the basin.
+    
+    L=[La, Lb]
+    La = [chem_file (dir. file), "GPCC" (name), "precip" (name variable), "time" (name time), True (True ou direction grdc rd si diff)]
+    
+    style = [s1,s2...]
+    s1 = ["-" (line style) ,"" (marker),"k"(color),0.6 (line size)]
+    """
+    i=0
+    while i<len(Lst):
+        print "####"
+        print i+1,"/",len(Lst), " :",Lst[i]
+        plotstn_obs_timeserie(Lst[i], L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs, y1, y2, style, basin)
+        i=i+1
+    print "Finished"
+
+    
+### Plot annual cycle for observation for basins stations ###    
+def plotallbasin_obs_timeserie(L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs, y1, y2, style, basin):
+    """
+    Plot the annual cycle for all the available stations of a basin.
+    
+    L : array, array of details on the data file.
+    chem_grdc_rd : str, direction of GRDC_river_desc corresponding file.
+    chem_grdc : str, direction of the GRDC file.
+    chem_grid : str, direction of the cell area file corresponding with chem_file & grdc_rd.
+    dgraphs : str, direction where to save the result
+    y1, y2 : int, year of beginning and end (included).
+    style : array, style array for visual details.
+    basin : str, name of the basin.
+    
+    L=[La, Lb]
+    La = [chem_file (dir. file), "GPCC" (name), "precip" (name variable), "time" (name time), True (True ou direction grdc rd si diff)]
+    
+    style = [s1,s2...]
+    s1 = ["-" (line style) ,"" (marker),"k"(color),0.6 (line size)]
+    """
+    print "###",basin,"###"
+    doc=open(dgraphs+basin+"stn.txt","w")
+    doc.write("### "+basin+" ###")
+    doc.close()
+    Lavst = OR.AvailableStn(chem_grdc_rd, chem_grdc, basin, AR=False, BR=False)
+    
+    if len(Lavst)==0: 
+        print "No Available Station"
+        return
+    Lst=[]
+    i=0
+    while i<len(Lavst):
+        Lst.append(Lavst[i][0])
+        i=i+1
+    plotallstn_obs_timeserie(Lst, L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs, y1, y2, style, basin)
+    return
+
+
 
 """
 ################
