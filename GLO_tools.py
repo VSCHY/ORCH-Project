@@ -72,8 +72,11 @@ def basicmap(indir, lonname, latname, varname, timestep, lonlattype="vect", save
     m = Basemap(projection='cyl', resolution="l",llcrnrlon=nlon,
             llcrnrlat=nlat, urcrnrlon=xlon, urcrnrlat=xlat)
     if lonlattype == "vect":
-        lon, lat = np.meshgrid(lons, lats)
+        print "lonlat: vectors"
+        lon, lat = np.meshgrid(olon[:], olat[:])
         xi, yi = m(lon, lat)
+    else:
+        xi, yi = m(olon[:,:], olat[:,:])
 
     #Draw
     cs = m.contourf(xi,yi,var[:,:,timestep],cmap=plt.get_cmap("rainbow"))
