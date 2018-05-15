@@ -320,7 +320,7 @@ def plotstn_obs_timeserie(stname, L, chem_grdc_rd, chem_grdc, chem_grid, dgraphs
     s1 = ["-" (line style) ,"" (marker),"k"(color),0.6 (line size)]
     """
     # Extract the data
-    OBS = np.zeros((y2-y1+1)*12,len(L)))
+    OBS = np.zeros(((y2-y1+1)*12,len(L)))
     i=0
     while i<len(L):
         print L[i][1]
