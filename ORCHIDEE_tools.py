@@ -944,7 +944,7 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     ax3.set_frame_on(False)
     xadj = -0.2
     if altbar: xadj = 0
-    plt.text(xadj,0,"Lon,Lat: \\"+str(round(det[1],2))+", " + str(round(det[0],2))+"\n Up. Area: "+str(int(det[2]))+" km$^2$ "+"\nAltitude: "+str(int(det[3])), fontsize = 5)
+    plt.text(xadj,0,"Lon,Lat: \\"+str(round(det[1],2))+", " + str(round(det[0],2))+"\n Up. Area: "+str(int(det[2]))+" km$^2$", fontsize = 5)
 
     # Finalize    
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.1, top=0.93,wspace= 0.)
@@ -1130,12 +1130,12 @@ def getDetails(stn, L, chem_GRDC, chem_Restart):
     # From GRDC
     j = stgrdcindex(stn, namegr)-1 # because here python index, start 0
     area =  importvariable(chem_GRDC, "area",1)[j]
-    altitude =  importvariable(chem_GRDC, "altitude",1)[j]
+    #altitude =  importvariable(chem_GRDC, "altitude",1)[j]
 
     # From restart - extraire fichier necessaire
     #topo = gettopo(chem_Restart,Lon_Stn_Model, Lat_Stn_Model)
     # Rearange Details
-    details = [Lat_Stn_GRDC,Lon_Stn_GRDC, area, altitude]
+    details = [Lat_Stn_GRDC,Lon_Stn_GRDC, area]
     return details
 
 
