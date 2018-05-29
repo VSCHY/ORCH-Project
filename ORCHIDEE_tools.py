@@ -944,7 +944,7 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     ax3.set_frame_on(False)
     xadj = -0.2
     if altbar: xadj = 0
-    plt.text(xadj,0,"Lon,Lat: "+str(round(det[1],2))+", " + str(round(det[0],2))+"\n Up. Area: "+str(int(det[2]))+" km$^2$", fontsize = 5)
+    plt.text(xadj,0,"Lon,Lat: "+str(round(det[1],2))+", " + str(round(det[0],2))+"\nUp. Area: "+str(int(det[2]))+" km$^2$", fontsize = 5)
 
     # Finalize    
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.1, top=0.93,wspace= 0.)
