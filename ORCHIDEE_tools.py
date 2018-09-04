@@ -175,8 +175,7 @@ def importTIME(chem_file, variable):
     """
     salid = NetCDFFile(chem_file, 'r')
     timv=salid.variables[variable]
-    time=timv[:]
-    dtime = num2date(time,timv.units)
+    dtime = num2date(timv[:],timv.units)
     return dtime
 ### Import the 2D value of a NetCDF file for a specific timestep
 def importTIMEvalue(chem_file, variable, i):
