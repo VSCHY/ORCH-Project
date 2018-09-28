@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
-# -*- coding: iso-8859-15 -*-
+# -*- coding: UTF-8 -*-
 """
 Tools for Python / ORCHIDEE
 From Anthony Schrapffer
@@ -166,6 +166,17 @@ def importNEWSIM(chem_orchnew):
     index3=salid.variables["Index_Stn_GRDC"][:]
     hydro3
     return dtime3, hydro3, index3
+
+### Import hydrographs observations, new format A.SCH completed data
+def importhydrobs(chem_hydrobs):
+    salid = NetCDFFile(chem_hydrobs, 'r')
+    timv=salid.variables['time']
+    time=timv[:]
+    dtime = num2date(time,timv.units)
+    hydro = salid.variables['hydro'][:,0] # (Time , cell domain - index station)
+    hydro
+    return dtime, hydro
+
 ### Import time on date format from a NetCDF file
 def importTIME(chem_file, variable):
     """
@@ -246,7 +257,8 @@ def finddate(dtime,d,m,y):
     y: int, year.
     """
     i=0
-    while (dtime[i].year != y or dtime[i].month != m or dtime[i].day != d) and i<len(dtime):
+    while (dtime[i].year != y or dtime[i].month != m ) and i<len(dtime):
+    # or dtime[i].day != d possible ajout pour date
         i=i+1
     return i
 ### Find the index of a specific month (case of monthly data)
@@ -492,6 +504,10 @@ def extract_stn(stname, chem_file, filetype, namegr="",
         hydrostn = hydro0[:,ind]
         return hydrostn, dtime0
 
+    elif filetype == "hydrobs":
+        dtime, hydro = importhydrobs(chem_file)
+        return hydro, dtime
+
     elif filetype == "rain" or filetype == "evap":
         if conv_rain:
             outdata, dtime = get_varmask_stn(stname, chem_file, chem_grdc_rd, chem_grdc, chem_grid, namegr, filetype, conv_rain=True)
@@ -520,10 +536,14 @@ def extract_liststn(stname, Li, chem_GRDC, chem_grdcnew="", chem_grid="", chem_g
             outlist.append([L0[2], dtime, data, True])  
             
         ### mettre ensemble et mettre Name pour tous re grouper au moins
-        elif L0[1]=="new" or L0[1]=="GRDCnew":
+        elif L0[1]=="new" or L0[1]=="GRDCnew" :
             data, dtime = extract_stn(stname, L0[0], L0[1], namegr=Name)
             outlist.append([L0[2], dtime, data, True])
-            
+        
+        elif L0[1] == "hydrobs":
+            data, dtime = extract_stn(stname, L0[0], L0[1], namegr=Name)
+            outlist.append([L0[2], dtime, data, "Mon"])            
+
         elif L0[1] == "rain" or L0[1] == "evap":
             if L0[3]: 
                 data, dtime = extract_stn(stname, L0[0], L0[1], namegr=Name, chem_grid=chem_grid,
@@ -551,17 +571,19 @@ def extract_timeseries(stname, L, chem_GRDC, y1, y2, chem_grid="", chem_grdc_rd=
     debug=False
     li=len(L)
     i=0
+    # Security presence GRDC File, True all the time to allow new Observation file
     isgrdc=False
     # Detect GRDC
     if debug: print "Detect GRDC"
     while i<li:
-        if L[i][1]=="GRDCnew":          
+        if L[i][1]=="GRDCnew" or L[i][1] == "hydrobs":          
             isgrdc=True
             grind=i # indice de GRDC
             break
         i=i+1
     if debug: print "Start"
     
+    # Importance GRDC new dans le cas de plot rainfall or evap
     if isgrdc: #Cas ou GRDC donc oublier chiffre si absence de donné pour cohérence 
         outlist=extract_liststn(stname, L, chem_GRDC, L[grind][0], chem_grid, chem_grdc_rd)
     
@@ -853,7 +875,7 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     """
     debug = None
     print "####"
-    print stname.replace("\xd6","o")
+    #print stname.replace("\xd6","o")
     
     doc=open(dgraphs+basin+"stn.txt","a")
     doc.write("\n"+stname)
@@ -892,7 +914,10 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
 
     while i<len(out):
         print L[i][2]
-        out0=monthmeantot(out[i][2],out[i][1],y1,y2) #data dtime y1 y2
+        if out[i][3] == "Mon":
+            out0 = out[i][2]
+        else:
+            out0=monthmeantot(out[i][2],out[i][1],y1,y2) #data dtime y1 y2
         if out[i][3]:
             print "Mean value : ",round(ma.mean(out0/1000),2),"10^3 m^3/s"
             ax1.plot(X, out0/1000, color = style[i][2] , marker = style[i][1],ls=style[i][0], ms=1,lw=style[i][3], markevery = 10)
@@ -936,6 +961,7 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
 
 
     # Get details info about station
+
     det = getDetails(stname, L, chem_GRDC, chem_Restart)
     ax3 = plt.subplot2grid((3, 10), (1, 8),colspan=2)
     ax3.xaxis.set_visible(False)
@@ -943,15 +969,19 @@ def plottimeserie(stname, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", ch
     ax3.set_frame_on(False)
     xadj = -0.2
     if altbar: xadj = 0
-    plt.text(xadj,0,"Lon,Lat: "+str(round(det[1],2))+", " + str(round(det[0],2))+"\nUp. Area: "+str(int(det[2]))+" km$^2$", fontsize = 5)
+    if det != None:
+        plt.text(xadj,0,"Lon,Lat: "+str(round(det[1],2))+", " + str(round(det[0],2))+"\nUp. Area: "+str(int(det[2]))+" km$^2$", fontsize = 5)
 
     # Finalize    
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.1, top=0.93,wspace= 0.)
-    fig.suptitle(r'Time series '+stname.replace("\xd6","o"), fontsize=8,y=0.985, x = 0.1, ha = "left")#loc="left"
+    fig.suptitle(r'Time series '+stname, fontsize=8,y=0.985, x = 0.1, ha = "left")#loc="left"
+    # .replace("\xd6","o")
     if "xd6" in stname:
-        fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-timeserie.jpg",dpi=350)
+        fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-")+"-timeserie.jpg",dpi=350)
+        # .replace("\xd6","o")
     else:
-        fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-timeserie.jpg",dpi=350)
+        fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-")+"-timeserie.jpg",dpi=350)
+        # .replace("\xd6","o")
     plt.close()
     return 
 

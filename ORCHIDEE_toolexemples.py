@@ -114,3 +114,40 @@ OR.plotallstn_timeseries(Lst, L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid, c
 
 #All station from a basin (Same parameter in the GRDC module and same original file)
 OR.plotallstn_timeseries_basin(L, chem_GRDC, y1, y2, dgraphs, basin, chem_grid="", chem_grdc_rd=""): #actualiser format
+
+
+
+#######################################################
+#######################################################
+### TIME SERIE  ###
+# Parameters
+dgraph="/Dir/Graphics/"
+
+# Data direction
+dorig = "/Dir/Originals/"
+dir_GRDC = "/Dir/GRDC_Monthly_June14.nc"
+dir_grdc_rd = dorig + "grdc_river_desc.nc"
+dir_grid= dorig + "cellarea.nc"
+dir_Restart = ""
+
+dir_E2OFD_GRDC = dorig + "GRDC_1979_1990.nc"
+dir_rout_ctrl = dorig + "Model_1979_1990.nc"
+
+
+La = [dir_E2OFD_GRDC, "GRDCnew", "GRDC"] # peut être vide
+Lb = [dir_rout_ctrl, "new", "WFDEI RegRt ctrl"]
+L=[La, Lb, Lc, Ld]
+
+
+Lstn = ["Corrientes", "Posadas", "Zanja Del Tigre", "Porto Murtinho"]
+dobs = "/home/anthony/Documents/Doctorat/PROD/DATOS-DISCHARGE/HYDROGRAPHS/"
+Lobs = [dobs+"Corrientes.nc",dobs+"Posadas.nc",dobs+"ZanjaDelTigre.nc",dobs+"Murtinho.nc"]
+
+for i in range(0,4):
+    print Lobs[i]
+    L[0] = [Lobs[i], "hydrobs", "Observations"]
+    OR.plottimeserie(Lstn[i], L, dir_GRDC, 1979, 1990, dgraph+"essai-", "Parana", chem_grid=dir_grid, chem_grdc_rd=dir_grdc_rd, chem_Restart = dir_Restart, style = style)
+
+
+
+
