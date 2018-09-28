@@ -1149,6 +1149,70 @@ def gettopo(chem_Restart,Lon_Stn_Model, Lat_Stn_Model):
     topomean = np.mean (a)
     return topomean
 
+
+
+
+
+def GetMapStn(stname, chem_GRDC, basin, chem_grdc_rd="", dgraphs=""):
+    """
+    Add the map with the indication of the station next to the graphic.
+    k: int, index of the station
+    fig: axis of the figure to plot the map
+    """
+    namegr = importGRDCname(chem_GRDC)
+    i = stgrdcindex(stname, namegr)-1 # car index commence à 1
+
+    lon = importvariable(chem_GRDC, "lon", 1)[i]
+    lat = importvariable(chem_GRDC, "lat", 1)[i]
+    ibas = np.where(Basins == basin)[0][0]
+    Lbas= Basins[ibas]
+    
+    
+    fig=plt.figure(figsize=(3.,2.3),dpi=400)
+    m = Basemap(projection="cyl", llcrnrlon=float(Lbas[1]), llcrnrlat=float(Lbas[2]),         \
+                    urcrnrlon=float(Lbas[3]), urcrnrlat= float(Lbas[4]), resolution="h")
+    m.arcgisimage(server='http://server.arcgisonline.com/ArcGIS', service = 'World_Physical_Map',epsg=4326,xpixels=400, dpi=400,verbose=True)
+    m.drawcountries(linewidth=0.25)
+    m.drawcoastlines(linewidth=0.25)
+    m.drawrivers(linewidth=0.15,color="b")
+    
+    ax = plt.gca()
+    
+    ax.plot([lon],[lat],'o',markersize=4,color='r')
+    if chem_grdc_rd != "":
+        namegr = importGRDCname(chem_GRDC)
+        index = stgrdcindex(stname,namegr)
+        mask = getstn_grdc_rd(chem_grdc_rd, index)
+        
+        lons = importvariable(chem_grdc_rd, "lon", 1)
+        lats = importvariable(chem_grdc_rd, "lat", 1)
+        lon, lat = np.meshgrid(lons, lats)
+        xi, yi = m(lon, lat)
+        # Voir si fonctionne ou si grille trop grande ne se grafique pas 
+        
+        m.contourf(xi ,yi ,mask,cmap=plt.get_cmap("Blues"))
+        ax.plot()
+
+    m.drawmeridians(np.arange(-180., 180.,10),labels=[True,False,False,True], fontsize = 6, linewidth = 0.5)
+    m.drawparallels(np.arange(-90, 90,10),labels=[False,True,False,False], fontsize = 6, linewidth = 0.5)
+
+    
+    plt.title(stname, fontsize = 12, loc = "left", y=0.98)
+    #plt.title("Location and Upstream Area of "+stname, fontsize = 6, loc = "left", y=0.98)
+
+    plt.subplots_adjust(wspace = 0.13, left=0.05,right=0.9, bottom=0.06, top= 0.9,hspace=0.2)
+
+    #fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-").replace("\xd6","o")+"-subbasin.jpg",dpi=350)
+    fig.savefig(dgraphs+stname.replace(" ","-").replace("/","-")+"-subbasin.png",dpi=400)
+    return 
+
+
+
+
+
+
+
+
 # Double axe
 """
 ax4 = ax1.twinx()
